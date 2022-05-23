@@ -5,8 +5,8 @@ venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
-# for admin purposes saving & upgrading
 
+# for saving & upgrading
 ```
 venv\Scripts\activate
 call pip freeze > requirements.txt
