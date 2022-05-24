@@ -68,7 +68,6 @@ async def get_request_history(
         json : A json containing the relevant information from the request.\n
     """
 
-    # query
     table = RequestHistory
     sql: Select = select(table)
 
@@ -118,7 +117,7 @@ async def post_request_history(request_history: request_history) -> json:
         request_history (request_history): Json containing the relevant elements of a request-history entry.\n
 
     Returns:\n
-        json: 200 response OK\n
+        json: {"ok": "ok"}\n
     """
     values = request_history.dict()
     table = RequestHistory

@@ -52,7 +52,7 @@ class UserChat(Base):
         ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
     )
     contains_image = Column(TINYINT)
-    image_key = Column(TINYINT)
+    image_key = Column(TINYTEXT)
     chat = Column(TINYTEXT)
 
 

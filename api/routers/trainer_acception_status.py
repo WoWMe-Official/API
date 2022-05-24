@@ -98,7 +98,7 @@ async def post_trainer_acception_status(
         trainer_acception_status (trainer_acception_status): A dictionary containing the trainer_acception_status payload\n
 
     Returns:\n
-        json: 200 OK\n
+        json: {"ok": "ok"}\n
     """
     values = trainer_acception_status.dict()
     table = TrainerAcceptionStatus
