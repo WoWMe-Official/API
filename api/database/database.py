@@ -49,5 +49,4 @@ class Engine:
         yield self.session()
 
 
-"""Our Database Engines"""
 USERDATA_ENGINE = Engine(EngineType.USERDATA)
