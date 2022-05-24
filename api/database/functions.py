@@ -7,10 +7,6 @@ from asyncio.tasks import create_task
 from collections import namedtuple
 from datetime import datetime, timedelta
 from typing import List
-
-# Although never directly used, the engines are imported to add a permanent reference
-# to these entities to prevent the
-# garbage collector from trying to dispose of our engines.
 from api.database.database import USERDATA_ENGINE, Engine, EngineType
 from fastapi import HTTPException
 from sqlalchemy import Text, text
@@ -19,6 +15,10 @@ from sqlalchemy.ext.asyncio import AsyncResult, AsyncSession
 from sqlalchemy.sql.expression import insert, select
 
 logger = logging.getLogger(__name__)
+
+
+async def verify_token(login: str, token: str) -> bool:
+    pass
 
 
 async def parse_sql(
