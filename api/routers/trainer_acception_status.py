@@ -35,8 +35,8 @@ class trainer_acception_status(BaseModel):
 )
 async def get_trainer_acception_status(
     token: str,
-    ID: Optional[int],
     user_id: int,
+    ID: Optional[int] = None,
     is_trainer: Optional[bool] = None,
     is_pending: Optional[bool] = None,
     timestamp: Optional[datetime] = None,

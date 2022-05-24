@@ -1,22 +1,21 @@
-from datetime import datetime
 import json
+from datetime import datetime
 from typing import Optional
 from urllib.request import Request
-from h11 import InformationalResponse
-
-from pyparsing import Opt
 
 from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
 from api.database.models import UserInformation
 from fastapi import APIRouter, HTTPException, Query, status
+from h11 import InformationalResponse
 from pydantic import BaseModel
 from pydantic.fields import Field
 from pymysql import Timestamp
+from pyparsing import Opt
 from sqlalchemy import BIGINT, DATETIME, TIMESTAMP, VARCHAR, BigInteger, func, select
 from sqlalchemy.dialects.mysql import Insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
-from sqlalchemy.sql.expression import Select, select, insert
+from sqlalchemy.sql.expression import Select, insert, select
 
 router = APIRouter()
 
@@ -43,18 +42,18 @@ class user_information(BaseModel):
 @router.get("/V1/user-information/", tags=["user", "information"])
 async def get_user_information(
     token: str,
-    ID: Optional[int],
-    user_id: Optional[int],
-    first_name: Optional[str],
-    middle_name: Optional[str],
-    last_name: Optional[str],
-    birthday: Optional[datetime],
-    gender: Optional[int],
-    location: Optional[str],
-    timestamp: Optional[datetime],
-    email: Optional[str],
-    phone: Optional[str],
-    SSN: Optional[str],
+    ID: Optional[int] = None,
+    user_id: Optional[int] = None,
+    first_name: Optional[str] = None,
+    middle_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    birthday: Optional[datetime] = None,
+    gender: Optional[int] = None,
+    location: Optional[str] = None,
+    timestamp: Optional[datetime] = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    SSN: Optional[str] = None,
     row_count: Optional[int] = Query(100, ge=1, le=1000),
     page: Optional[int] = Query(1, ge=1),
 ) -> json:

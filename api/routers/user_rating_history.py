@@ -1,24 +1,23 @@
-from datetime import datetime
 import json
+from datetime import datetime
 from pickletools import optimize
 from typing import Optional
 from urllib.request import Request
-from h11 import InformationalResponse
-
-from pyparsing import Opt
-from requests import request
 
 from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
 from api.database.models import UserRatingHistory
 from fastapi import APIRouter, HTTPException, Query, status
+from h11 import InformationalResponse
 from pydantic import BaseModel
 from pydantic.fields import Field
 from pymysql import Timestamp
+from pyparsing import Opt
+from requests import request
 from sqlalchemy import BIGINT, DATETIME, TIMESTAMP, VARCHAR, BigInteger, func, select
 from sqlalchemy.dialects.mysql import Insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
-from sqlalchemy.sql.expression import Select, select, insert
+from sqlalchemy.sql.expression import Select, insert, select
 
 router = APIRouter()
 
@@ -40,13 +39,13 @@ class user_rating_history(BaseModel):
 @router.get("/V1/user-rating-history/", tags=["user", "rating history"])
 async def get_user_rating_history(
     token: str,
-    ID: Optional[int],
-    timestamp: Optional[datetime],
-    s_user_id: Optional[int],
-    r_user_id: Optional[int],
-    rating: Optional[int],
-    comment: Optional[str],
-    request_history_id: Optional[int],
+    ID: Optional[int] = None,
+    timestamp: Optional[datetime] = None,
+    s_user_id: Optional[int] = None,
+    r_user_id: Optional[int] = None,
+    rating: Optional[int] = None,
+    comment: Optional[str] = None,
+    request_history_id: Optional[int] = None,
     row_count: Optional[int] = Query(100, ge=1, le=1000),
     page: Optional[int] = Query(1, ge=1),
 ) -> json:

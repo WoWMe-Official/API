@@ -1,25 +1,24 @@
-from datetime import datetime
 import json
+from datetime import datetime
 from pickletools import optimize
 from pstats import Stats
 from typing import Optional
 from urllib.request import Request
-from h11 import InformationalResponse
-
-from pyparsing import Opt
-from requests import request
 
 from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
 from api.database.models import UserStats
 from fastapi import APIRouter, HTTPException, Query, status
+from h11 import InformationalResponse
 from pydantic import BaseModel
 from pydantic.fields import Field
 from pymysql import Timestamp
+from pyparsing import Opt
+from requests import request
 from sqlalchemy import BIGINT, DATETIME, TIMESTAMP, VARCHAR, BigInteger, func, select
 from sqlalchemy.dialects.mysql import Insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
-from sqlalchemy.sql.expression import Select, select, insert
+from sqlalchemy.sql.expression import Select, insert, select
 
 router = APIRouter()
 
@@ -47,19 +46,19 @@ class user_stats(BaseModel):
 @router.get("/V1/user-stats/", tags=["user", "stats"])
 async def get_user_stats(
     token: str,
-    ID: Optional[int],
-    user_id: Optional[int],
-    timestamp: Optional[datetime],
-    height: Optional[int],
-    weight: Optional[int],
-    experience: Optional[int],
-    fat_percentage: Optional[int],
-    fitness_level: Optional[int],
-    fitness_goals: Optional[int],
-    ava_dotw: Optional[int],
-    ava_hr_start: Optional[datetime],
-    ava_hr_end: Optional[datetime],
-    pricing_per_hour: Optional[int],
+    ID: Optional[int] = None,
+    user_id: Optional[int] = None,
+    timestamp: Optional[datetime] = None,
+    height: Optional[int] = None,
+    weight: Optional[int] = None,
+    experience: Optional[int] = None,
+    fat_percentage: Optional[int] = None,
+    fitness_level: Optional[int] = None,
+    fitness_goals: Optional[int] = None,
+    ava_dotw: Optional[int] = None,
+    ava_hr_start: Optional[datetime] = None,
+    ava_hr_end: Optional[datetime] = None,
+    pricing_per_hour: Optional[int] = None,
     row_count: Optional[int] = Query(100, ge=1, le=1000),
     page: Optional[int] = Query(1, ge=1),
 ) -> json:

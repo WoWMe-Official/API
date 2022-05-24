@@ -37,12 +37,12 @@ class user_chat(BaseModel):
 @router.get("/V1/user-chat/", tags=["user", "chat"])
 async def get_user_chat(
     token: str,
-    ID: Optional[int],
-    timestamp: Optional[datetime],
-    s_user_id: Optional[int],
-    r_user_id: Optional[int],
-    contains_image: Optional[int],
-    image_key: Optional[str],
+    ID: Optional[int] = None,
+    timestamp: Optional[datetime] = None,
+    s_user_id: Optional[int] = None,
+    r_user_id: Optional[int] = None,
+    contains_image: Optional[int] = None,
+    image_key: Optional[str] = None,
     chat: Optional[str] = Query(None, max_length=280),
     row_count: Optional[int] = Query(100, ge=1, le=1000),
     page: Optional[int] = Query(1, ge=1),
