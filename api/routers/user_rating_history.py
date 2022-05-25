@@ -78,25 +78,25 @@ async def get_user_rating_history(
     table = UserRatingHistory
     sql: Select = select(table)
 
-    if not ID == None:
+    if ID is not None:
         sql = sql.where(table.ID == ID)
 
-    if not timestamp == None:
+    if timestamp is not None:
         sql = sql.where(table.timestamp == timestamp)
 
-    if not s_user_id == None:
+    if s_user_id is not None:
         sql = sql.where(table.s_user_id == s_user_id)
 
-    if not r_user_id == None:
+    if r_user_id is not None:
         sql = sql.where(table.r_user_id == r_user_id)
 
-    if not rating == None:
+    if rating is not None:
         sql = sql.where(table.rating == rating)
 
-    if not comment == None:
+    if comment is not None:
         sql = sql.where(table.comment == comment)
 
-    if not request_history_id == None:
+    if request_history_id is not None:
         sql = sql.where(table.request_history_id == request_history_id)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))

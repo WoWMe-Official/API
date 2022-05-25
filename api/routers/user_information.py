@@ -91,40 +91,40 @@ async def get_user_information(
     table = UserInformation
     sql: Select = select(table)
 
-    if not ID == None:
+    if ID is not None:
         sql = sql.where(table.ID == ID)
 
-    if not user_id == None:
+    if user_id is not None:
         sql = sql.where(table.user_id == user_id)
 
-    if not first_name == None:
+    if first_name is not None:
         sql = sql.where(table.first_name == first_name)
 
-    if not user_id == None:
+    if user_id is not None:
         sql = sql.where(table.middle_name == middle_name)
 
-    if not last_name == None:
+    if last_name is not None:
         sql = sql.where(table.last_name == last_name)
 
-    if not birthday == None:
+    if birthday is not None:
         sql = sql.where(table.birthday == birthday)
 
-    if not gender == None:
+    if gender is not None:
         sql = sql.where(table.gender == gender)
 
-    if not location == None:
+    if location is not None:
         sql = sql.where(table.location == location)
 
-    if not timestamp == None:
+    if timestamp is not None:
         sql = sql.where(table.timestamp == timestamp)
 
-    if not email == None:
+    if email is not None:
         sql = sql.where(table.email == email)
 
-    if not phone == None:
+    if phone is not None:
         sql = sql.where(table.phone == phone)
 
-    if not SSN == None:
+    if SSN is not None:
         sql = sql.where(table.SSN == SSN)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))

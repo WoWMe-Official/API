@@ -35,9 +35,8 @@ class trainer_acception_status(BaseModel):
     timestamp: Optional[datetime] = None
 
 
-@router.get(
-    "/V1/trainer-acception-status/", tags=["trainer", "trainer acception status"]
-)
+@router.get("/V1/trainer-acception-status/",
+            tags=["trainer", "trainer acception status"])
 async def get_trainer_acception_status(
     token: str,
     login: str,
@@ -70,19 +69,19 @@ async def get_trainer_acception_status(
     table = TrainerAcceptionStatus
     sql: Select = select(table)
 
-    if not ID == None:
+    if ID is not None:
         sql = sql.where(table.ID == ID)
 
-    if not user_id == None:
+    if user_id is not None:
         sql = sql.where(table.user_id == user_id)
 
-    if not is_trainer == None:
+    if is_trainer is not None:
         sql = sql.where(table.is_trainer == is_trainer)
 
-    if not is_pending == None:
+    if is_pending is not None:
         sql = sql.where(table.is_pending == is_pending)
 
-    if not timestamp == None:
+    if timestamp is not None:
         sql = sql.where(table.timestamp == timestamp)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))
@@ -96,9 +95,8 @@ async def get_trainer_acception_status(
     return data.rows2dict()
 
 
-@router.post(
-    "/V1/trainer-acception-status", tags=["trainer", "trainer acception status"]
-)
+@router.post("/V1/trainer-acception-status",
+             tags=["trainer", "trainer acception status"])
 async def post_trainer_acception_status(
     login: str,
     token: str,
