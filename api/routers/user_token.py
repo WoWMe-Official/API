@@ -11,7 +11,12 @@ from h11 import InformationalResponse
 from pyparsing import Opt
 from requests import request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import UserToken
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
@@ -39,6 +44,7 @@ class user_token(BaseModel):
 
 @router.get("/V1/user-token/", tags=["user", "token"])
 async def get_user_token(
+    login: str,
     ID: Optional[int] = None,
     user_id: int = None,
     auth_level: Optional[int] = None,
@@ -58,6 +64,9 @@ async def get_user_token(
     Returns:\n
         json: requested output\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = UserToken
     sql: Select = select(table)
@@ -86,7 +95,7 @@ async def get_user_token(
 
 
 @router.post("/V1/user-token", tags=["user", "token"])
-async def post_user_token(user_token: user_token) -> json:
+async def post_user_token(login: str, token: str, user_token: user_token) -> json:
     """
     Args:\n
         user_token (user_token): user token model\n
@@ -94,6 +103,9 @@ async def post_user_token(user_token: user_token) -> json:
     Returns:\n
         json: {"ok": "ok"}\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     values = user_token.dict()
     table = UserToken

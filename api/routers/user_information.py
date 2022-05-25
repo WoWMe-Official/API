@@ -3,7 +3,12 @@ from datetime import datetime
 from typing import Optional
 from urllib.request import Request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import UserInformation
 from fastapi import APIRouter, HTTPException, Query, status
 from h11 import InformationalResponse
@@ -42,6 +47,7 @@ class user_information(BaseModel):
 @router.get("/V1/user-information/", tags=["user", "information"])
 async def get_user_information(
     token: str,
+    login: str,
     ID: Optional[int] = None,
     user_id: Optional[int] = None,
     first_name: Optional[str] = None,
@@ -78,6 +84,9 @@ async def get_user_information(
     Returns:\n
         json: Json output \n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = UserInformation
     sql: Select = select(table)
@@ -130,7 +139,9 @@ async def get_user_information(
 
 
 @router.post("/V1/user-information", tags=["user", "information"])
-async def post_user_information(user_information: user_information) -> json:
+async def post_user_information(
+    login: str, token: str, user_information: user_information
+) -> json:
     """
     Args:\n
         user_information (user_information): model of user information and stats\n
@@ -138,6 +149,9 @@ async def post_user_information(user_information: user_information) -> json:
     Returns:\n
         json: {"ok": "ok"}\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     values = user_information.dict()
     table = UserInformation

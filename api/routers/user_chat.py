@@ -5,7 +5,12 @@ from urllib.request import Request
 
 from pyparsing import Opt
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import UserChat
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
@@ -37,6 +42,7 @@ class user_chat(BaseModel):
 @router.get("/V1/user-chat/", tags=["user", "chat"])
 async def get_user_chat(
     token: str,
+    login: str,
     ID: Optional[int] = None,
     timestamp: Optional[datetime] = None,
     s_user_id: Optional[int] = None,
@@ -63,6 +69,9 @@ async def get_user_chat(
     Returns:\n
         json: Json of above query\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = UserChat
     sql: Select = select(table)
@@ -100,13 +109,16 @@ async def get_user_chat(
 
 
 @router.post("/V1/user-chat", tags=["user", "chat"])
-async def post_user_chat(user_chat: user_chat) -> json:
+async def post_user_chat(login: str, token: str, user_chat: user_chat) -> json:
     """
     Args:\n
         user_chat (user_chat): user chat model\n
     Returns:\n
         json: {"ok": "ok"}\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     values = user_chat.dict()
     table = UserChat

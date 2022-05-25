@@ -7,7 +7,12 @@ from pstats import Stats
 from typing import Optional
 from urllib.request import Request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import Users
 from fastapi import APIRouter, HTTPException, Query, status
 from h11 import InformationalResponse
@@ -60,11 +65,11 @@ async def get_users(
         json: output as listed above\n
     """
 
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
+
     table = Users
     sql: Select = select(table)
-
-    if not token == None:
-        sql = sql.where(table.token == token)
 
     if not user_id == None:
         sql = sql.where(table.user_id == user_id)
@@ -90,14 +95,19 @@ async def get_users(
 
 
 @router.post("/V1/users", tags=["user"])
-async def post_users(users: users) -> json:
+async def post_users(login: str, token: str, users: users) -> json:
     """
     Args:\n
         users (users): users model\n
+        login (str): user's login username
+        token (str): user's token information
 
     Returns:\n
         json: {"ok": "ok"}\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     values = users.dict()
     table = Users

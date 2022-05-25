@@ -5,7 +5,12 @@ from pstats import Stats
 from typing import Optional
 from urllib.request import Request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import UserStats
 from fastapi import APIRouter, HTTPException, Query, status
 from h11 import InformationalResponse
@@ -46,6 +51,7 @@ class user_stats(BaseModel):
 @router.get("/V1/user-stats/", tags=["user", "stats"])
 async def get_user_stats(
     token: str,
+    login: str,
     ID: Optional[int] = None,
     user_id: Optional[int] = None,
     timestamp: Optional[datetime] = None,
@@ -84,6 +90,9 @@ async def get_user_stats(
     Returns:\n
         json: JSON output of value\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = UserStats
     sql: Select = select(table)
@@ -139,7 +148,7 @@ async def get_user_stats(
 
 
 @router.post("/V1/user-stats", tags=["user", "stats"])
-async def post_user_stats(user_stats: user_stats) -> json:
+async def post_user_stats(login: str, token: str, user_stats: user_stats) -> json:
     """
     Args:\n
         user_stats (user_stats): user stats model\n
@@ -147,6 +156,9 @@ async def post_user_stats(user_stats: user_stats) -> json:
     Returns:\n
         json: {"ok": "ok"}\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     values = user_stats.dict()
     table = UserStats

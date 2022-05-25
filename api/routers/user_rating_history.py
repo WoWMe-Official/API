@@ -4,7 +4,12 @@ from pickletools import optimize
 from typing import Optional
 from urllib.request import Request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import UserRatingHistory
 from fastapi import APIRouter, HTTPException, Query, status
 from h11 import InformationalResponse
@@ -39,6 +44,7 @@ class user_rating_history(BaseModel):
 @router.get("/V1/user-rating-history/", tags=["user", "rating history"])
 async def get_user_rating_history(
     token: str,
+    login: str,
     ID: Optional[int] = None,
     timestamp: Optional[datetime] = None,
     s_user_id: Optional[int] = None,
@@ -65,6 +71,9 @@ async def get_user_rating_history(
     Returns:\n
         json: JSON response object of the above content\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = UserRatingHistory
     sql: Select = select(table)
@@ -102,13 +111,18 @@ async def get_user_rating_history(
 
 
 @router.post("/V1/user-rating-history", tags=["user", "rating history"])
-async def post_user_rating_history(user_rating_history: user_rating_history) -> json:
+async def post_user_rating_history(
+    login: str, token: str, user_rating_history: user_rating_history
+) -> json:
     """
     Args:\n
         user_rating_history (user_rating_history): User rating history model\n
     Returns:\n
         json: {"ok": "ok"}\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     values = user_rating_history.dict()
     table = UserRatingHistory

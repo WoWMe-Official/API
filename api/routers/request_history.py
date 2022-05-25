@@ -3,7 +3,12 @@ import json
 from typing import Optional
 from urllib.request import Request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import RequestHistory
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
@@ -37,6 +42,7 @@ class request_history(BaseModel):
 @router.get("/V1/request-history/", tags=["request history"])
 async def get_request_history(
     token: str,
+    login: str,
     s_user_id: int,
     r_user_id: int,
     timestamp_START: Optional[datetime] = None,
@@ -67,6 +73,9 @@ async def get_request_history(
     Returns:\n
         json : A json containing the relevant information from the request.\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = RequestHistory
     sql: Select = select(table)
@@ -111,7 +120,9 @@ async def get_request_history(
 
 
 @router.post("/V1/request-history", tags=["request history"])
-async def post_request_history(request_history: request_history) -> json:
+async def post_request_history(
+    login: str, token: str, request_history: request_history
+) -> json:
     """
     Args:\n
         request_history (request_history): Json containing the relevant elements of a request-history entry.\n
@@ -119,6 +130,8 @@ async def post_request_history(request_history: request_history) -> json:
     Returns:\n
         json: {"ok": "ok"}\n
     """
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
     values = request_history.dict()
     table = RequestHistory
     sql = insert(table).values(values)

@@ -1,9 +1,10 @@
 from datetime import datetime
-from numpy import integer
 
+from numpy import integer
 from sqlalchemy import (
     BLOB,
     DATETIME,
+    INTEGER,
     SMALLINT,
     TIME,
     TIMESTAMP,
@@ -17,7 +18,6 @@ from sqlalchemy import (
     Index,
     String,
     Text,
-    INTEGER,
     column,
     text,
 )

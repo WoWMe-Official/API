@@ -15,11 +15,47 @@ from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncResult, AsyncSession
 from sqlalchemy.sql.expression import insert, select
 
+from api.database.models import UserToken, Users
+
 logger = logging.getLogger(__name__)
 
 
-async def verify_token(login: str, token: str) -> bool:
-    pass
+async def verify_token(login: str, token: str, access_level=0) -> bool:
+    """User verification request - this display's the user's access level and if they have permissions to access the content that they wish to view.
+
+    Args:
+        login (str): The username that is sending the auth request
+        token (str): The auth token being sent by the user
+
+    Returns:
+        bool: True|False depending upon if the request was successful, or not.
+    """
+
+    sql = select(UserToken)
+    sql = sql.where(UserToken.token == token)
+    sql = sql.where(Users.login == login)
+    sql = sql.join(Users, UserToken.user_id == Users.user_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            request = await session.execute(sql)
+            data = sqlalchemy_result(request)
+            data = data.rows2dict()
+
+    if len(data) == 0:
+        raise HTTPException(
+            status_code=401,
+            detail=f"Insufficent permissions. You cannot access this content.",
+        )
+
+    auth_level = data[0]["auth_level"]
+    if access_level > auth_level:
+        raise HTTPException(
+            status_code=401,
+            detail=f"Insufficent permissions. You cannot access this content at your auth level.",
+        )
+    return True
 
 
 async def parse_sql(

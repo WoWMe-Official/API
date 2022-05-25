@@ -3,7 +3,12 @@ import json
 from typing import Optional
 from urllib.request import Request
 
-from api.database.functions import USERDATA_ENGINE, EngineType, sqlalchemy_result
+from api.database.functions import (
+    USERDATA_ENGINE,
+    EngineType,
+    sqlalchemy_result,
+    verify_token,
+)
 from api.database.models import TrainerAcceptionStatus
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
@@ -35,6 +40,7 @@ class trainer_acception_status(BaseModel):
 )
 async def get_trainer_acception_status(
     token: str,
+    login: str,
     user_id: int,
     ID: Optional[int] = None,
     is_trainer: Optional[bool] = None,
@@ -57,6 +63,9 @@ async def get_trainer_acception_status(
     Returns:\n
         json: Json response containing the relevant information.\n
     """
+
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
 
     table = TrainerAcceptionStatus
     sql: Select = select(table)
@@ -91,6 +100,8 @@ async def get_trainer_acception_status(
     "/V1/trainer-acception-status", tags=["trainer", "trainer acception status"]
 )
 async def post_trainer_acception_status(
+    login: str,
+    token: str,
     trainer_acception_status: trainer_acception_status,
 ) -> json:
     """
@@ -100,6 +111,8 @@ async def post_trainer_acception_status(
     Returns:\n
         json: {"ok": "ok"}\n
     """
+    if not await verify_token(login=login, token=token, access_level=9):
+        return
     values = trainer_acception_status.dict()
     table = TrainerAcceptionStatus
     sql = insert(table).values(values)
