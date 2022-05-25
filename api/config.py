@@ -7,8 +7,7 @@ import warnings
 # import logging_loki
 from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI
-
-# from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 # load environment variables
 load_dotenv(find_dotenv(), verbose=True)
@@ -18,14 +17,18 @@ token = os.environ.get("token")
 # create application
 app = FastAPI()
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # setup logging
+try:
+    os.mkdir("logs/error.log")
+except FileExistsError:
+    pass
 file_handler = logging.FileHandler(filename="logs/error.log", mode="a")
 stream_handler = logging.StreamHandler(sys.stdout)
 
