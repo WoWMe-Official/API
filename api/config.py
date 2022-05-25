@@ -24,11 +24,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# setup logging
-try:
-    os.mkdir("logs/error.log")
-except FileExistsError:
-    pass
 file_handler = logging.FileHandler(filename="logs/error.log", mode="a")
 stream_handler = logging.StreamHandler(sys.stdout)
 
