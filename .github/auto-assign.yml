@@ -1,0 +1,6 @@
+addReviewers: true
+addAssignees: true
+reviewers:
+  - Ferrariic
+assignees:
+  - author
