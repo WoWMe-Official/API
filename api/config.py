@@ -24,29 +24,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-file_handler = logging.FileHandler(filename="logs/error.log", mode="a")
-stream_handler = logging.StreamHandler(sys.stdout)
+# file_handler = logging.FileHandler(filename="logs/error.log", mode="a")
+# stream_handler = logging.StreamHandler(sys.stdout)
 
-# log formatting
-formatter = logging.Formatter(
-    json.dumps(
-        {
-            "ts": "%(asctime)s",
-            "name": "%(name)s",
-            "function": "%(funcName)s",
-            "level": "%(levelname)s",
-            "msg": json.dumps("%(message)s"),
-        }
-    )
-)
+# # log formatting
+# formatter = logging.Formatter(
+#     json.dumps(
+#         {
+#             "ts": "%(asctime)s",
+#             "name": "%(name)s",
+#             "function": "%(funcName)s",
+#             "level": "%(levelname)s",
+#             "msg": json.dumps("%(message)s"),
+#         }
+#     )
+# )
 
 
-file_handler.setFormatter(formatter)
-stream_handler.setFormatter(formatter)
+# file_handler.setFormatter(formatter)
+# stream_handler.setFormatter(formatter)
 
-handlers = [file_handler, stream_handler]
+# handlers = [file_handler, stream_handler]
 
-logging.basicConfig(level=logging.DEBUG, handlers=handlers)
+# logging.basicConfig(level=logging.DEBUG, handlers=handlers)
 
 # set imported loggers to warning
 logging.getLogger("requests").setLevel(logging.DEBUG)
