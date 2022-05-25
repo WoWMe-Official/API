@@ -80,31 +80,32 @@ async def get_request_history(
     table = RequestHistory
     sql: Select = select(table)
 
-    if not s_user_id == None:
+    if s_user_id is not None:
         sql = sql.where(table.s_user_id == s_user_id)
 
-    if not r_user_id == None:
+    if r_user_id is not None:
         sql = sql.where(table.r_user_id == r_user_id)
 
-    if not timestamp_START == None:
+    if timestamp_START is not None:
         sql = sql.where(table.timestamp_START == timestamp_START)
 
-    if not timestamp_DEAD == None:
+    if timestamp_DEAD is not None:
         sql = sql.where(table.timestamp_DEAD == timestamp_DEAD)
 
-    if not timestamp_start_session == None:
-        sql = sql.where(table.timestamp_start_session == timestamp_start_session)
+    if timestamp_start_session is not None:
+        sql = sql.where(table.timestamp_start_session ==
+                        timestamp_start_session)
 
-    if not timestamp_end_session == None:
+    if timestamp_end_session is not None:
         sql = sql.where(table.timestamp_end_session == timestamp_end_session)
 
-    if not price_per_hour == None:
+    if price_per_hour is not None:
         sql = sql.where(table.price_per_hour == price_per_hour)
 
-    if not fitness_categories == None:
+    if fitness_categories is not None:
         sql = sql.where(table.fitness_categories == fitness_categories)
 
-    if not status == None:
+    if status is not None:
         sql = sql.where(table.status == status)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))
