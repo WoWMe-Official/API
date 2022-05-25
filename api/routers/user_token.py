@@ -71,16 +71,16 @@ async def get_user_token(
     table = UserToken
     sql: Select = select(table)
 
-    if not ID == None:
+    if ID is not None:
         sql = sql.where(table.ID == ID)
 
-    if not user_id == None:
+    if user_id is not None:
         sql = sql.where(table.user_id == user_id)
 
-    if not auth_level == None:
+    if auth_level is not None:
         sql = sql.where(table.auth_level == auth_level)
 
-    if not token == None:
+    if token is not None:
         sql = sql.where(table.token == token)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))

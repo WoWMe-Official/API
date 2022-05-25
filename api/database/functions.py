@@ -175,7 +175,7 @@ async def batch_function(function, data, batch_size=100):
     batches = []
     for i in range(0, len(data), batch_size):
         logger.debug({"batch": {f"{function.__name__}": f"{i}/{len(data)}"}})
-        batch = data[i : i + batch_size]
+        batch = data[i: i + batch_size]
         batches.append(batch)
 
     await asyncio.gather(*[create_task(function(batch)) for batch in batches])

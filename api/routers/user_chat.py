@@ -76,25 +76,25 @@ async def get_user_chat(
     table = UserChat
     sql: Select = select(table)
 
-    if not s_user_id == None:
+    if s_user_id is not None:
         sql = sql.where(table.s_user_id == s_user_id)
 
-    if not r_user_id == None:
+    if r_user_id is not None:
         sql = sql.where(table.r_user_id == r_user_id)
 
-    if not timestamp == None:
+    if timestamp is not None:
         sql = sql.where(table.timestamp == timestamp)
 
-    if not contains_image == None:
+    if contains_image is not None:
         sql = sql.where(table.contains_image == contains_image)
 
-    if not image_key == None:
+    if image_key is not None:
         sql = sql.where(table.image_key == image_key)
 
-    if not chat == None:
+    if chat is not None:
         sql = sql.where(table.chat == chat)
 
-    if not ID == None:
+    if ID is not None:
         sql = sql.where(table.ID == ID)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))
