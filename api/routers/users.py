@@ -71,16 +71,16 @@ async def get_users(
     table = Users
     sql: Select = select(table)
 
-    if not user_id == None:
+    if user_id is not None:
         sql = sql.where(table.user_id == user_id)
 
-    if not login == None:
+    if login is not None:
         sql = sql.where(table.login == login)
 
-    if not password == None:
+    if password is not None:
         sql = sql.where(table.password == password)
 
-    if not timestamp == None:
+    if timestamp is not None:
         sql = sql.where(table.timestamp == timestamp)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))

@@ -97,43 +97,43 @@ async def get_user_stats(
     table = UserStats
     sql: Select = select(table)
 
-    if not ID == None:
+    if ID is not None:
         sql = sql.where(table.ID == ID)
 
-    if not user_id == None:
+    if user_id is not None:
         sql = sql.where(table.user_id == user_id)
 
-    if not height == None:
+    if height is not None:
         sql = sql.where(table.height == height)
 
-    if not weight == None:
+    if weight is not None:
         sql = sql.where(table.weight == weight)
 
-    if not experience == None:
+    if experience is not None:
         sql = sql.where(table.experience == experience)
 
-    if not fitness_level == None:
+    if fitness_level is not None:
         sql = sql.where(table.fitness_level == fitness_level)
 
-    if not fitness_goals == None:
+    if fitness_goals is not None:
         sql = sql.where(table.fitness_goals == fitness_goals)
 
-    if not fat_percentage == None:
+    if fat_percentage is not None:
         sql = sql.where(table.fat_percentage == fat_percentage)
 
-    if not ava_dotw == None:
+    if ava_dotw is not None:
         sql = sql.where(table.ava_dotw == ava_dotw)
 
-    if not ava_hr_start == None:
+    if ava_hr_start is not None:
         sql = sql.where(table.ava_hr_start == ava_hr_start)
 
-    if not ava_hr_end == None:
+    if ava_hr_end is not None:
         sql = sql.where(table.ava_hr_end == ava_hr_end)
 
-    if not pricing_per_hour == None:
+    if pricing_per_hour is not None:
         sql = sql.where(table.pricing_per_hour == pricing_per_hour)
 
-    if not timestamp == None:
+    if timestamp is not None:
         sql = sql.where(table.timestamp == timestamp)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))
