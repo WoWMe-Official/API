@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import unique
 
 from numpy import integer
 from sqlalchemy import (
@@ -68,7 +69,7 @@ class UserImages(Base):
     bio = Column(TINYINT)
     banner = Column(TINYINT)
     image_key = Column(TINYTEXT)
-    image = Column(BLOB)
+    image = Column(TEXT, unique=True)
     size = Column(TINYINT)
     timestamp = Column(TIMESTAMP)
 
@@ -134,17 +135,6 @@ class UserToken(Base):
     )
     auth_level = Column(TINYINT)
     token = Column(TINYTEXT)
-
-
-class TrainerIdentificationInformation(Base):
-    __tablename__ = "trainer_identification_information"
-    ID = Column(INTEGER, primary_key=True)
-    user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    content = Column(BLOB)
-    content_type = Column(TINYINT)
-    timestamp = Column(TIMESTAMP)
 
 
 class TrainerAcceptionStatus(Base):

@@ -5,6 +5,7 @@ from api.routers import (
     request_history,
     trainer_acception_status,
     user_chat,
+    user_images,
     user_information,
     user_rating_history,
     user_stats,
@@ -19,6 +20,7 @@ app.include_router(user_information.router)
 app.include_router(user_rating_history.router)
 app.include_router(user_stats.router)
 app.include_router(user_token.router)
+app.include_router(user_images.router)
 app.include_router(users.router)
 
 
