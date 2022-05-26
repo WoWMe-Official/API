@@ -10,3 +10,8 @@ services:
       - "5000:5000"
     env_file:
       - .env
+    volumes:
+      - API_volume:/code/images
+volumes:
+  API_volume:
+    external: true
