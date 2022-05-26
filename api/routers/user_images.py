@@ -160,7 +160,7 @@ async def post_user_images(
     image_key = await image_token_generator(length=50)
 
     # set directory
-    directory = f"images/{user_id}"
+    directory = f"./image_service/images/{user_id}"
     image_path = f"{directory}/{image_key}"
 
     # create directory
