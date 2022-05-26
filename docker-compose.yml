@@ -11,4 +11,4 @@ services:
     env_file:
       - .env
     volumes:
-      - ./API_volume:/image_service/images:rw
+      - ./API_volume:/code/images:rw
