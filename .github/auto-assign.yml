@@ -2,5 +2,6 @@ addReviewers: true
 addAssignees: true
 reviewers:
   - Ferrariic
-assignees:
-  - author
+  - Mrj628809
+  - antiritano
+numberOfReviewers: 0
