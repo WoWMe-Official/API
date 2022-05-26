@@ -12,6 +12,3 @@ services:
       - .env
     volumes:
       - API_volume:/code/images
-volumes:
-  API_volume:
-    external: true
