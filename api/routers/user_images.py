@@ -1,8 +1,8 @@
-from genericpath import exists
 import json
 import os
 import shutil
 from datetime import datetime
+from enum import Enum
 from pickletools import optimize
 from typing import Optional
 from urllib.request import Request
@@ -15,7 +15,9 @@ from api.database.functions import (
     verify_token,
 )
 from api.database.models import UserImages
+from api.routers.users import get_users
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
+from genericpath import exists
 from pydantic import BaseModel
 from pydantic.fields import Field
 from pymysql import Timestamp
@@ -25,9 +27,6 @@ from sqlalchemy.dialects.mysql import Insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql.expression import Select, insert, select
-
-from api.routers.users import get_users
-from enum import Enum
 
 router = APIRouter()
 

@@ -5,11 +5,11 @@ from api.routers import (
     request_history,
     trainer_acception_status,
     user_chat,
+    user_images,
     user_information,
     user_rating_history,
     user_stats,
     user_token,
-    user_images,
     users,
 )
 

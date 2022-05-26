@@ -137,19 +137,6 @@ class UserToken(Base):
     token = Column(TINYTEXT)
 
 
-class TrainerIdentificationInformation(Base):
-    __tablename__ = "trainer_identification_information"
-    ID = Column(INTEGER, primary_key=True)
-    user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    image = Column(
-        ForeignKey("user_images.image", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    content_type = Column(TINYINT)
-    timestamp = Column(TIMESTAMP)
-
-
 class TrainerAcceptionStatus(Base):
     __tablename__ = "trainer_acception_status"
     ID = Column(INTEGER, primary_key=True)
