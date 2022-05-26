@@ -9,6 +9,7 @@ from api.routers import (
     user_rating_history,
     user_stats,
     user_token,
+    user_images,
     users,
 )
 
@@ -19,6 +20,7 @@ app.include_router(user_information.router)
 app.include_router(user_rating_history.router)
 app.include_router(user_stats.router)
 app.include_router(user_token.router)
+app.include_router(user_images.router)
 app.include_router(users.router)
 
 

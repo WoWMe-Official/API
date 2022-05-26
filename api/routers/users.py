@@ -48,8 +48,9 @@ async def get_users(
     login: Optional[str] = None,
     password: Optional[str] = None,
     timestamp: Optional[datetime] = None,
-    row_count: Optional[int] = Query(100, ge=1, le=1000),
-    page: Optional[int] = Query(1, ge=1),
+    self_lookup: Optional[bool] = True,
+    row_count: Optional[int] = 100,
+    page: Optional[int] = 1,
 ) -> json:
     """
     Args:\n
@@ -58,6 +59,7 @@ async def get_users(
         login (Optional[str], optional): login username. Defaults to None.\n
         password (Optional[str], optional): hashed/salted password to be checked against on login. Defaults to None.\n
         timestamp (Optional[datetime], optional): timestamp of creation. Defaults to None.\n
+        self_lookup (Optional[bool]), optional: toggles if the get request is for a self-lookup
         row_count (Optional[int], optional): row count to be chosen at time of get. Defaults to Query(100, ge=1, le=1000).\n
         page (Optional[int], optional): page selection. Defaults to Query(1, ge=1).\n
 
@@ -71,17 +73,15 @@ async def get_users(
     table = Users
     sql: Select = select(table)
 
-    if user_id is not None:
-        sql = sql.where(table.user_id == user_id)
-
+    if not self_lookup:
+        if user_id is not None:
+            sql = sql.where(table.user_id == user_id)
+        if password is not None:
+            sql = sql.where(table.password == password)
+        if timestamp is not None:
+            sql = sql.where(table.timestamp == timestamp)
     if login is not None:
         sql = sql.where(table.login == login)
-
-    if password is not None:
-        sql = sql.where(table.password == password)
-
-    if timestamp is not None:
-        sql = sql.where(table.timestamp == timestamp)
 
     sql = sql.limit(row_count).offset(row_count * (page - 1))
 

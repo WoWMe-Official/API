@@ -2,6 +2,8 @@ import asyncio
 import logging
 import random
 import re
+import string
+import sys
 import traceback
 from asyncio.tasks import create_task
 from collections import namedtuple
@@ -9,13 +11,12 @@ from datetime import datetime, timedelta
 from typing import List
 
 from api.database.database import USERDATA_ENGINE, Engine, EngineType
+from api.database.models import Users, UserToken
 from fastapi import HTTPException
 from sqlalchemy import Text, text
 from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncResult, AsyncSession
 from sqlalchemy.sql.expression import insert, select
-
-from api.database.models import UserToken, Users
 
 logger = logging.getLogger(__name__)
 
@@ -175,8 +176,17 @@ async def batch_function(function, data, batch_size=100):
     batches = []
     for i in range(0, len(data), batch_size):
         logger.debug({"batch": {f"{function.__name__}": f"{i}/{len(data)}"}})
-        batch = data[i: i + batch_size]
+        batch = data[i : i + batch_size]
         batches.append(batch)
 
     await asyncio.gather(*[create_task(function(batch)) for batch in batches])
     return
+
+
+async def image_token_generator(length=10):
+    return "".join(
+        random.SystemRandom().choice(
+            string.ascii_uppercase + string.ascii_lowercase + string.digits
+        )
+        for _ in range(length)
+    )
