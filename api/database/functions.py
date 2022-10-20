@@ -1,62 +1,31 @@
 import asyncio
+import hashlib
 import logging
 import random
-import re
+import secrets
 import string
-import sys
 import traceback
 from asyncio.tasks import create_task
 from collections import namedtuple
-from datetime import datetime, timedelta
-from typing import List
 
-from api.database.database import USERDATA_ENGINE, Engine, EngineType
-from api.database.models import Users, UserToken
-from fastapi import HTTPException
+from api.config import salt
+from api.database.database import USERDATA_ENGINE, Engine
 from sqlalchemy import Text, text
 from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncResult, AsyncSession
-from sqlalchemy.sql.expression import insert, select
 
 logger = logging.getLogger(__name__)
 
 
-async def verify_token(login: str, token: str, access_level=0) -> bool:
-    """User verification request - this display's the user's access level and if they have permissions to access the content that they wish to view.
+async def hashbrown(password: str):
+    """hashes and salts password"""
+    string = password + salt
+    return hashlib.sha256(string.encode()).hexdigest()
 
-    Args:
-        login (str): The username that is sending the auth request
-        token (str): The auth token being sent by the user
 
-    Returns:
-        bool: True|False depending upon if the request was successful, or not.
-    """
-
-    sql = select(UserToken)
-    sql = sql.where(UserToken.token == token)
-    sql = sql.where(Users.login == login)
-    sql = sql.join(Users, UserToken.user_id == Users.user_id)
-
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            request = await session.execute(sql)
-            data = sqlalchemy_result(request)
-            data = data.rows2dict()
-
-    if len(data) == 0:
-        raise HTTPException(
-            status_code=401,
-            detail=f"Insufficent permissions. You cannot access this content.",
-        )
-
-    auth_level = data[0]["auth_level"]
-    if access_level > auth_level:
-        raise HTTPException(
-            status_code=401,
-            detail=f"Insufficent permissions. You cannot access this content at your auth level.",
-        )
-    return True
+async def generate_token():
+    token = secrets.token_urlsafe(32)
+    return token
 
 
 async def parse_sql(
@@ -176,7 +145,7 @@ async def batch_function(function, data, batch_size=100):
     batches = []
     for i in range(0, len(data), batch_size):
         logger.debug({"batch": {f"{function.__name__}": f"{i}/{len(data)}"}})
-        batch = data[i: i + batch_size]
+        batch = data[i : i + batch_size]
         batches.append(batch)
 
     await asyncio.gather(*[create_task(function(batch)) for batch in batches])

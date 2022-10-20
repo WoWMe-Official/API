@@ -1,16 +1,17 @@
 name: Deployment workflow
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   checkout:
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v2
-    - name: Set Up ENV
-      run: |
+      - uses: actions/checkout@v2
+      - name: Set Up ENV
+        run: |
           echo "${{ secrets.SQL_URI }}" > .env
+          echo "${{ secrets.SALT }}" >> .env
 
   deploy:
     runs-on: self-hosted
