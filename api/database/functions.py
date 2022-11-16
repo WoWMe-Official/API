@@ -8,11 +8,12 @@ import traceback
 from asyncio.tasks import create_task
 from collections import namedtuple
 
-from api.config import salt
-from api.database.database import USERDATA_ENGINE, Engine
 from sqlalchemy import Text, text
 from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncResult, AsyncSession
+
+from api.config import salt
+from api.database.database import USERDATA_ENGINE, Engine
 
 logger = logging.getLogger(__name__)
 
