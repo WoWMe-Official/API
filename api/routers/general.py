@@ -18,11 +18,6 @@ from sqlalchemy.sql.expression import select, update
 router = APIRouter()
 
 
-@router.get("/v1/profiles/{token}", tags=["profile"])
-async def get_profile_information(token: str) -> json:
-    """returns profile picture string, and user id"""
-
-
 @router.get("/v1/trainers/{token}", tags=["trainers"])
 async def get_trainer_information(token: str) -> json:
     """

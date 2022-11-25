@@ -1,9 +1,10 @@
 import api.middleware
 from api.config import app
-from api.routers import registration, general
+from api.routers import registration, general, profile
 
 app.include_router(registration.router)
 app.include_router(general.router)
+app.include_router(profile.router)
 
 
 @app.get("/")
