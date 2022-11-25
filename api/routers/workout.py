@@ -18,38 +18,21 @@ from sqlalchemy.sql.expression import select, update
 router = APIRouter()
 
 
-@router.get("/v1/profiles/{token}", tags=["profile"])
-async def get_profile_information(token: str) -> json:
-    """returns profile picture string, and user id"""
-
-
-@router.post("/v1/profiles/{token}", tags=["profile"])
-async def post_profile_picture(token: str) -> json:
-    """returns profile picture string, and user id"""
-
-
-@router.get("/v1/profile-details/{token}/{user_id}", tags=["profile"])
-async def get_profile_details(token: str, user_id: str) -> json:
+@router.get("/v1/workout/{token}/{user_id}", tags=["workout"])
+async def get_workout_plan(token: str, user_id: str) -> json:
     """
-    Get Profile Details
     Params:
     {
     Token: string,
     User id: number,
     }
-
-    Returns
+    Returns:
     {
     Name: string,
-    Type: string,
     Rating: number,
-    Rate: number,
-    About: string,
-    Goals: array:string,
-    Number of photos: number,
-    Partners: number,
-    Trainers: number,
-    Gallery: array:string
+    Number of workouts completed: number,
+    Fitness level: string,
+    Global stats: array: { title: string, stat: number },
+    Workout plan: array: array: {workout: string, repts: string, weight: number}
     }
     """
-    pass
