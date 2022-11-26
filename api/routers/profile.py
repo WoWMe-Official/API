@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from pymysql import Timestamp
 import datetime
+import os
 
 from api.database.functions import hashbrown, sqlalchemy_result
 from api.database.models import Registration, Tokens
@@ -14,6 +15,7 @@ from fastapi import APIRouter, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select, update
+from fastapi import File, UploadFile
 
 router = APIRouter()
 
@@ -24,8 +26,20 @@ async def get_profile_information(token: str) -> json:
 
 
 @router.post("/v1/profiles/{token}", tags=["profile"])
-async def post_profile_picture(token: str) -> json:
-    """returns profile picture string, and user id"""
+async def post_profile_picture(token: str, file: UploadFile = File(...)) -> json:
+    # get user id from token
+
+    try:
+        contents = file.file.read()
+        os.mkdir(f"./images/{token}")
+        with open(f"./images/{token}/{file.filename}", "wb") as f:
+            f.write(contents)
+    except Exception:
+        return {"message": "File could not be uploaded. Try again later!"}
+    finally:
+        file.file.close()
+
+    return {"message": f"Successfully uploaded {file.filename}"}
 
 
 @router.get("/v1/profile-details/{token}/{user_id}", tags=["profile"])
