@@ -20,19 +20,21 @@ from fastapi import File, UploadFile
 router = APIRouter()
 
 
-@router.get("/v1/profiles/{token}", tags=["profile"])
-async def get_profile_information(token: str) -> json:
+@router.get("/v1/profile/thumbnail/{user_id}", tags=["profile"])
+async def get_profile_information(user_id: str, token: str) -> json:
     """returns profile picture string, and user id"""
 
 
-@router.post("/v1/profiles/{token}", tags=["profile"])
+@router.post("/v1/profile/thumbnail/{token}", tags=["profile"])
 async def post_profile_picture(token: str, file: UploadFile = File(...)) -> json:
     # get user id from token
 
+    user_id = "test"
+
     try:
         contents = file.file.read()
-        os.mkdir(f"./images/{token}")
-        with open(f"./images/{token}/{file.filename}", "wb") as f:
+        os.mkdir(f"./images/{user_id}")
+        with open(f"./images/{user_id}/{file.filename}", "wb") as f:
             f.write(contents)
     except Exception:
         return {"message": "File could not be uploaded. Try again later!"}
