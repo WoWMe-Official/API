@@ -1,16 +1,16 @@
 import api.middleware
 from api.config import app
 from api.routers import (
+    account,
     challenge,
-    registration,
+    dashboard,
+    event,
     profile,
     trainer,
-    event,
-    dashboard,
     workout,
 )
 
-app.include_router(registration.router)
+app.include_router(account.router)
 app.include_router(challenge.router)
 app.include_router(profile.router)
 app.include_router(trainer.router)

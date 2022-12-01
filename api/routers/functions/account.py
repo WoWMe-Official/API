@@ -16,7 +16,7 @@ from api.database.models import (
     TrainerInformation,
     UserInformation,
 )
-from api.routers.models.registration import *
+from api.routers.models.account import *
 
 
 async def sanitize_email(email: str):
@@ -119,12 +119,10 @@ async def examine_email(email: str):
 
 
 async def sign_up_account(signup: signup):
-    registration = Registration
-
     hashed_pass = await hashbrown(signup.personal_information.password)
 
     # personal information registration
-    sql_personal_information = insert(registration).values(
+    sql_personal_information = insert(Registration).values(
         email=signup.personal_information.email,
         password=hashed_pass,
         phone=signup.personal_information.phone,
@@ -137,8 +135,8 @@ async def sign_up_account(signup: signup):
         instagram=signup.personal_information.social.instagram,
     )
 
-    sql_select_user_id = select(registration).where(
-        registration.email == signup.personal_information.email
+    sql_select_user_id = select(Registration).where(
+        Registration.email == signup.personal_information.email
     )
 
     async with USERDATA_ENGINE.get_session() as session:
