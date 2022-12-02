@@ -7,6 +7,10 @@ import string
 import traceback
 from asyncio.tasks import create_task
 from collections import namedtuple
+from PIL import Image
+import PIL
+import os
+import glob
 
 from sqlalchemy import Text, text
 from sqlalchemy.exc import InternalError, OperationalError

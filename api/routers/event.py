@@ -18,7 +18,7 @@ from sqlalchemy.sql.expression import select, update
 router = APIRouter()
 
 
-@router.get("/v1/events/{token}", tags=["events"])
+@router.get("/v1/events/{token}", tags=['event'])
 async def get_event_information(token: str) -> json:
     """
     Params: token:string

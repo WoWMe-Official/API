@@ -18,7 +18,7 @@ from sqlalchemy.sql.expression import select, update
 router = APIRouter()
 
 
-@router.get("/v1/dashboard/{token}/{user_id}", tags=["dashboard"])
+@router.get("/v1/dashboard/{token}/{user_id}", tags=['dashboard'])
 async def get_dashboard_information(token: str, user_id: str) -> json:
     """
     Params:

@@ -1,50 +1,199 @@
-import json
-
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import List, Optional
-from pymysql import Timestamp
 import datetime
+import json
 import os
+from typing import List, Optional
 
-from api.database.functions import hashbrown, sqlalchemy_result
-from api.database.models import Registration, Tokens
-from sqlalchemy.sql.expression import select, update
-from api.database.database import USERDATA_ENGINE
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from pymysql import Timestamp
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select, update
-from fastapi import File, UploadFile
+
+from api.database.database import USERDATA_ENGINE
+from api.database.functions import hashbrown, sqlalchemy_result
+from api.database.models import Registration, Tokens
+import cv2
+import time
 
 router = APIRouter()
 
 
-@router.get("/v1/profile/thumbnail/{user_id}", tags=["profile"])
-async def get_profile_information(user_id: str, token: str) -> json:
-    """returns profile picture string, and user id"""
+@router.get("/v1/profile/avatar/{user_id}", tags=["profile"])
+async def get_profile_picture(user_id: str) -> json:
+    "Get the profile picture of a user by their ID."
+    if not os.path.exists(f"images\{user_id}\profile.jpeg"):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This user does not have a profile picture.",
+        )
+
+    return FileResponse(f"images\{user_id}\profile.jpeg")
 
 
-@router.post("/v1/profile/thumbnail/{token}", tags=["profile"])
-async def post_profile_picture(token: str, file: UploadFile = File(...)) -> json:
-    # get user id from token
+@router.post("/v1/profile/avatar/{token}", tags=["profile"])
+async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> json:
+    # if len(await file.read()) >= 20_000_000:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+    #         detail="Your file exceeds 20MB. Please reduce your file upload.",
+    #     )
 
-    user_id = "test"
+    sql = select(Tokens).where(Tokens.token == token)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+    uuid = data[0].get("user_id")
 
     try:
+
         contents = file.file.read()
-        os.mkdir(f"./images/{user_id}")
-        with open(f"./images/{user_id}/{file.filename}", "wb") as f:
+        path = f"./images/{uuid}"
+        temp_path = path + f"/{file.filename}"
+        complete_path = path + "/profile.jpeg"
+
+        if not (os.path.exists(path=path)):
+            os.mkdir(path=path)
+        with open(temp_path, "wb") as f:
             f.write(contents)
-    except Exception:
-        return {"message": "File could not be uploaded. Try again later!"}
+
+        im = cv2.imread(temp_path)
+        cv2.imwrite(complete_path, im, [cv2.IMWRITE_JPEG_OPTIMIZE, 9])
+        os.remove(temp_path)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="There was an error uploading your profile picture. Support has been notified.",
+        )
     finally:
         file.file.close()
 
-    return {"message": f"Successfully uploaded {file.filename}"}
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED,
+        detail="Your profile picture has been successfully uploaded!",
+    )
 
 
-@router.get("/v1/profile-details/{token}/{user_id}", tags=["profile"])
+@router.get("/v1/profile/background/{user_id}", tags=["profile"])
+async def get_background_picture(user_id: str) -> json:
+    "Get the background picture of a user by their ID."
+    if not os.path.exists(f"images\{user_id}\background.jpeg"):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This user does not have a background picture.",
+        )
+
+    return FileResponse(f"images\{user_id}\background.jpeg")
+
+
+@router.post("/v1/profile/background/{token}", tags=["profile"])
+async def upload_background_picture(token: str, file: UploadFile = File(...)) -> json:
+
+    sql = select(Tokens).where(Tokens.token == token)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+    uuid = data[0].get("user_id")
+
+    try:
+
+        contents = file.file.read()
+        path = f"./images/{uuid}"
+        temp_path = path + f"/{file.filename}"
+        complete_path = path + "/background.jpeg"
+
+        if not (os.path.exists(path=path)):
+            os.mkdir(path=path)
+        with open(temp_path, "wb") as f:
+            f.write(contents)
+
+        im = cv2.imread(temp_path)
+        cv2.imwrite(complete_path, im, [cv2.IMWRITE_JPEG_OPTIMIZE, 9])
+        os.remove(temp_path)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="There was an error uploading your background picture. Support has been notified.",
+        )
+    finally:
+        file.file.close()
+
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED,
+        detail="Your profile background has been successfully uploaded!",
+    )
+
+
+@router.get("/v1/profile/gallery/{user_id}/{picture_id}", tags=["profile"])
+async def get_gallery_picture(user_id: str, picture_id: str) -> json:
+    "Get the gallery picture of a user by their ID and picture ID"
+    if not os.path.exists(f"images\{user_id}\gallery\{picture_id}.jpeg"):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This user does not have a background picture.",
+        )
+
+    return FileResponse(f"images\{user_id}\gallery\{picture_id}.jpeg")
+
+
+@router.post("/v1/profile/gallery/{token}", tags=["profile"])
+async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> json:
+
+    sql = select(Tokens).where(Tokens.token == token)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+    uuid = data[0].get("user_id")
+
+    try:
+
+        contents = file.file.read()
+        path = f"./images/{uuid}/gallery"
+        temp_path = path + f"/{file.filename}"
+        complete_path = path + f"/{int(time.time())}.jpeg"
+
+        if not (os.path.exists(path=path)):
+            os.mkdir(path=path)
+        with open(temp_path, "wb") as f:
+            f.write(contents)
+
+        im = cv2.imread(temp_path)
+        cv2.imwrite(complete_path, im, [cv2.IMWRITE_JPEG_OPTIMIZE, 9])
+        os.remove(temp_path)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="There was an error uploading your gallery picture. Support has been notified.",
+        )
+    finally:
+        file.file.close()
+
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED,
+        detail="Your gallery picture has been successfully uploaded!",
+    )
+
+
+@router.get("/v1/profile/details/{token}/{user_id}", tags=["profile"])
 async def get_profile_details(token: str, user_id: str) -> json:
     """
     Get Profile Details
