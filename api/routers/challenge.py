@@ -42,4 +42,3 @@ async def get_challenge_details(token: str, challenge_id: str) -> json:
     Leaderboard: array: {name: string, pace: number, distance: number}
     }
     """
-    pass

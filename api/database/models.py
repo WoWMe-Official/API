@@ -1,31 +1,7 @@
-from datetime import datetime
-from enum import unique
-
-from numpy import integer
-from sqlalchemy import (
-    BLOB,
-    DATETIME,
-    INTEGER,
-    SMALLINT,
-    TIME,
-    TIMESTAMP,
-    VARCHAR,
-    BigInteger,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    String,
-    Text,
-    column,
-    text,
-)
+from sqlalchemy import DECIMAL, INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey
 from sqlalchemy.dialects.mysql import TEXT, TINYINT, VARCHAR
 from sqlalchemy.dialects.mysql.types import TINYTEXT
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 
 # generated with sqlacodegen
 Base = declarative_base()
@@ -47,9 +23,37 @@ class Registration(Base):
     birthdate = Column(TIMESTAMP)
     about_you = Column(TEXT)
     gender = Column(TINYINT)
+    account_type = Column(TINYINT)
     facebook = Column(TINYINT)
     instagram = Column(TINYINT)
     timestamp_edited = Column(TIMESTAMP)
+
+
+class Relationships(Base):
+    __tablename__ = "relationships"
+
+    relationship_id = Column(INTEGER, primary_key=True)
+    relationship_type = Column(TINYINT)
+    user_id_1 = Column(INTEGER)
+    user_id_2 = Column(INTEGER)
+    pending_response = Column(TINYINT)
+    target = Column(INTEGER)
+
+
+class Ratings(Base):
+    __tablename__ = "ratings"
+
+    rating_id = Column(INTEGER, primary_key=True)
+    rater = Column(INTEGER)
+    rated = Column(INTEGER)
+    rating = Column(TINYINT)
+
+
+class AccountTypes(Base):
+    __tablename__ = "account_types"
+
+    ID = Column(TINYINT, primary_key=True)
+    account_type = Column(TINYTEXT)
 
 
 class UserInformation(Base):
@@ -103,6 +107,30 @@ class TrainerInformation(Base):
     rate = Column(INTEGER)
     payment_method = Column(TINYTEXT)
     certification_photo = Column(TINYTEXT)
+
+
+class TrainerStats(Base):
+    __tablename__ = "trainer_stats"
+
+    trainer_id = Column(INTEGER, primary_key=True)
+    wallet_balance = Column(DECIMAL)
+    earnings_total = Column(DECIMAL)
+    taxes_total = Column(DECIMAL)
+    hours_worked = Column(DECIMAL)
+    sessions_worked = Column(INTEGER)
+    categories_assigned = Column(INTEGER)
+    client_count = Column(INTEGER)
+    steps = Column(INTEGER)
+    distance = Column(INTEGER)
+
+
+class TrainerClientHistory(Base):
+    __tablename__ = "trainer_client_history"
+
+    session_id = Column(INTEGER, primary_key=True)
+    trainer_id = Column(INTEGER)
+    client_id = Column(INTEGER)
+    timestamp = Column(TIMESTAMP)
 
 
 class Specializations(Base):
