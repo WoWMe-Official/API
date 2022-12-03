@@ -60,8 +60,10 @@ class UserInformation(Base):
     __tablename__ = "user_information"
 
     user_id = Column(INTEGER, primary_key=True)
-    height = Column(INTEGER)
-    weight = Column(INTEGER)
+    height_ft_in = Column(DECIMAL)
+    weight_lb = Column(INTEGER)
+    height_cm = Column(INTEGER)
+    weight_kg = Column(INTEGER)
     body_fat_percentage = Column(INTEGER)
     fitness_level = Column(INTEGER)
 

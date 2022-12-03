@@ -71,11 +71,13 @@ CREATE TABLE `tokens` (
 
 CREATE TABLE `user_information` (
  `user_id` int NOT NULL,
- `height` int NOT NULL,
- `weight` int NOT NULL,
+ `height_ft_in` decimal(10,0) NOT NULL,
+ `weight_lb` int NOT NULL,
+ `height_cm` int NOT NULL,
+ `weight_kg` int NOT NULL,
  `body_fat_percentage` int NOT NULL,
  `fitness_level` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3
 
 CREATE TABLE `specializations` (
  `ID` int NOT NULL AUTO_INCREMENT,

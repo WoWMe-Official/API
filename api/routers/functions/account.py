@@ -72,13 +72,37 @@ async def sanity_check(signup: signup):
                 detail="Unlikely body fat percentage, please try again.",
             )
 
-        if signup.user_information.height > 300 or signup.user_information.height < 0:
+        if (
+            signup.user_information.height_ft_in > 300
+            or signup.user_information.height_ft_in < 0
+        ):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Unlikely height value in centimeters, please try again.",
             )
 
-        if signup.user_information.weight > 1000 or signup.user_information.weight < 0:
+        if (
+            signup.user_information.weight_lb > 1000
+            or signup.user_information.weight_lb < 0
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Unlikely weight value in kilograms, please try again.",
+            )
+
+        if (
+            signup.user_information.height_cm > 300
+            or signup.user_information.height_cm < 0
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Unlikely height value in centimeters, please try again.",
+            )
+
+        if (
+            signup.user_information.weight_kg > 1000
+            or signup.user_information.weight_kg < 0
+        ):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Unlikely weight value in kilograms, please try again.",
@@ -160,8 +184,10 @@ async def sign_up_account(signup: signup):
     if signup.role.isUser:
         sql_insert_user_information = insert(UserInformation).values(
             user_id=uuid,
-            height=signup.user_information.height,
-            weight=signup.user_information.weight,
+            height_ft_in=signup.user_information.height_ft_in,
+            weight_lb=signup.user_information.weight_lb,
+            height_cm=signup.user_information.height_cm,
+            weight_kg=signup.user_information.weight_kg,
             body_fat_percentage=signup.user_information.body_fat_percentage,
             fitness_level=signup.user_information.fitness_level,
         )

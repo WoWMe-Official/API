@@ -27,8 +27,10 @@ class role(BaseModel):
 
 class user_information(BaseModel):
     available_days: List[day]
-    height: Optional[int]
-    weight: Optional[int]
+    height_ft_in: Optional[int]
+    weight_lb: Optional[int]
+    height_cm: Optional[int]
+    weight_kg: Optional[int]
     body_fat_percentage: Optional[int]
     fitness_level: Optional[int]
     fitness_goals: Optional[List[str]]
