@@ -29,14 +29,14 @@ router = APIRouter()
 async def get_profile_picture(user_id: str) -> json:
     "Get the profile picture of a user by their ID."
 
-    print(f"{os.getcwd()}\images\{user_id}\profile.jpeg")
-    if not os.path.exists(f"{os.getcwd()}\images\{user_id}\profile.jpeg"):
+    print(f"{os.getcwd()}/images/{user_id}/profile.jpeg")
+    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/profile.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a profile picture.",
         )
 
-    return FileResponse(f"{os.getcwd()}\images\{user_id}\profile.jpeg")
+    return FileResponse(f"{os.getcwd()}/images/{user_id}/profile.jpeg")
 
 
 @router.post("/v1/profile/avatar/{token}", tags=["profile"])
