@@ -1,31 +1,26 @@
-import datetime
+import glob
 import json
 import os
-from typing import List, Optional
+import time
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
+import cv2
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
-from pymysql import Timestamp
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import select, update
 from sqlalchemy.sql import or_
+from sqlalchemy.sql.expression import select
 
 from api.database.database import USERDATA_ENGINE
-from api.database.functions import hashbrown, sqlalchemy_result
+from api.database.functions import sqlalchemy_result
 from api.database.models import (
-    Registration,
-    Tokens,
-    UserInformation,
     FitnessGoals,
     Ratings,
+    Registration,
     Relationships,
+    Tokens,
     TrainerInformation,
 )
-import cv2
-import time
-import glob
 
 router = APIRouter()
 
