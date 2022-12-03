@@ -176,9 +176,13 @@ async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> js
     try:
 
         contents = file.file.read()
+        root_path = f"./images/{uuid}"
         path = f"./images/{uuid}/gallery"
         temp_path = path + f"/{file.filename}"
         complete_path = path + f"/{int(time.time())}.jpeg"
+
+        if not (os.path.exists(path=root_path)):
+            os.mkdir(path=root_path)
 
         if not (os.path.exists(path=path)):
             os.mkdir(path=path)
