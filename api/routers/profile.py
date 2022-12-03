@@ -91,13 +91,13 @@ async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> js
 @router.get("/v1/profile/background/{user_id}", tags=["profile"])
 async def get_background_picture(user_id: str) -> json:
     "Get the background picture of a user by their ID."
-    if not os.path.exists(f"{os.getcwd()}\images\{user_id}\background.jpeg"):
+    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/background.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a background picture.",
         )
 
-    return FileResponse(f"{os.getcwd()}\images\{user_id}\background.jpeg")
+    return FileResponse(f"{os.getcwd()}/images/{user_id}/background.jpeg")
 
 
 @router.post("/v1/profile/background/{token}", tags=["profile"])
@@ -147,13 +147,13 @@ async def upload_background_picture(token: str, file: UploadFile = File(...)) ->
 @router.get("/v1/profile/gallery/{user_id}/{picture_id}", tags=["profile"])
 async def get_gallery_picture(user_id: str, picture_id: str) -> json:
     "Get the gallery picture of a user by their ID and picture ID"
-    if not os.path.exists(f"{os.getcwd()}\images\{user_id}\gallery\{picture_id}.jpeg"):
+    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/gallery/{picture_id}.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a background picture.",
         )
 
-    return FileResponse(f"{os.getcwd()}\images\{user_id}\gallery\{picture_id}.jpeg")
+    return FileResponse(f"{os.getcwd()}/images/{user_id}/gallery/{picture_id}.jpeg")
 
 
 @router.post("/v1/profile/gallery/{token}", tags=["profile"])
@@ -286,7 +286,7 @@ async def get_profile_details(user_id: str) -> json:
         partners = relationships.count(0)
         trainers = relationships.count(1)
 
-    path = f"{os.getcwd()}\images\{user_id}\gallery\*"
+    path = f"{os.getcwd()}/images/{user_id}/gallery/*"
     files = glob.glob(path)
     photo_count = len(files)
     gallery = [os.path.basename(x)[:-5] for x in files]

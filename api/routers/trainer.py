@@ -92,14 +92,14 @@ async def evaluate_identification(token: str, user_id: int) -> json:
     data = data.rows2dict()
     auth_level = data[0].get("auth_level")
 
-    if not os.path.exists(f"{os.getcwd()}\images\{user_id}\identification.jpeg"):
+    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/identification.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user has not uploaded any identification.",
         )
 
     if auth_level == 9:
-        return FileResponse(f"{os.getcwd()}\images\{user_id}\identification.jpeg")
+        return FileResponse(f"{os.getcwd()}/images/{user_id}/identification.jpeg")
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -174,14 +174,14 @@ async def evaluate_certification(token: str, user_id: int) -> json:
     data = data.rows2dict()
     auth_level = data[0].get("auth_level")
 
-    if not os.path.exists(f"{os.getcwd()}\images\{user_id}\certification.jpeg"):
+    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/certification.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user has not uploaded any certification.",
         )
 
     if auth_level == 9:
-        return FileResponse(f"{os.getcwd()}\images\{user_id}\certification.jpeg")
+        return FileResponse(f"{os.getcwd()}/images/{user_id}/certification.jpeg")
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
