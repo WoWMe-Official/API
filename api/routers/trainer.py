@@ -1,18 +1,16 @@
 import json
+import os
 
-from fastapi import APIRouter
-
-from api.database.functions import sqlalchemy_result
-from api.database.models import Tokens, TrainerInformation
-from sqlalchemy.sql.expression import select, update
-from api.database.database import USERDATA_ENGINE
-from fastapi import APIRouter, HTTPException, UploadFile, File, status
+import cv2
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select, update
-from fastapi.responses import FileResponse
-import cv2
-import os
+
+from api.database.database import USERDATA_ENGINE
+from api.database.functions import sqlalchemy_result
+from api.database.models import Tokens, TrainerInformation
 
 router = APIRouter()
 

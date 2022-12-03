@@ -145,7 +145,7 @@ async def examine_email(email: str):
 async def sign_up_account(signup: signup):
     hashed_pass = await hashbrown(signup.personal_information.password)
 
-    account_type_value = [1 if signup.role.isTrainer else 0]
+    account_type_value = [1 if signup.role.isTrainer else 0][0]
 
     # personal information registration
     sql_personal_information = insert(Registration).values(
