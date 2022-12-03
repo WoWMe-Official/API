@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # load environment variables
 load_dotenv(find_dotenv(), verbose=True)
 sql_uri = os.environ.get("sql_uri")
-token = os.environ.get("token")
+salt = os.environ.get("salt")
 
 # create application
 app = FastAPI()
@@ -20,6 +20,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

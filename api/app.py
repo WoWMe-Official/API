@@ -1,27 +1,22 @@
 import api.middleware
 from api.config import app
-from api.database.models import UserInformation
 from api.routers import (
-    request_history,
-    trainer_acception_status,
-    user_chat,
-    user_images,
-    user_information,
-    user_rating_history,
-    user_stats,
-    user_token,
-    users,
+    account,
+    challenge,
+    dashboard,
+    event,
+    profile,
+    trainer,
+    workout,
 )
 
-app.include_router(request_history.router)
-app.include_router(trainer_acception_status.router)
-app.include_router(user_chat.router)
-app.include_router(user_information.router)
-app.include_router(user_rating_history.router)
-app.include_router(user_stats.router)
-app.include_router(user_token.router)
-app.include_router(user_images.router)
-app.include_router(users.router)
+app.include_router(account.router)
+app.include_router(challenge.router)
+app.include_router(profile.router)
+app.include_router(trainer.router)
+app.include_router(event.router)
+app.include_router(dashboard.router)
+app.include_router(workout.router)
 
 
 @app.get("/")

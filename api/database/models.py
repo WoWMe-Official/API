@@ -1,167 +1,154 @@
-from datetime import datetime
-from enum import unique
-
-from numpy import integer
-from sqlalchemy import (
-    BLOB,
-    DATETIME,
-    INTEGER,
-    SMALLINT,
-    TIME,
-    TIMESTAMP,
-    VARCHAR,
-    BigInteger,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    String,
-    Text,
-    column,
-    text,
-)
+from sqlalchemy import DECIMAL, INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey
 from sqlalchemy.dialects.mysql import TEXT, TINYINT, VARCHAR
 from sqlalchemy.dialects.mysql.types import TINYTEXT
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 
 # generated with sqlacodegen
 Base = declarative_base()
 metadata = Base.metadata
 
 
-class Users(Base):
-    __tablename__ = "users"
+class Registration(Base):
+    __tablename__ = "registration"
 
     user_id = Column(INTEGER, primary_key=True)
-    login = Column(VARCHAR(64))
+    email = Column(VARCHAR(320))  # max email length
     password = Column(TINYTEXT)
-    timestamp = Column(TIMESTAMP)
-
-
-class UserChat(Base):
-    __tablename__ = "user_chat"
-
-    ID = Column(BigInteger, primary_key=True)
-    timestamp = Column(TIMESTAMP)
-    s_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
+    timestamp_created = Column(
+        TIMESTAMP,
     )
-    r_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    contains_image = Column(TINYINT)
-    image_key = Column(TINYTEXT)
-    chat = Column(TINYTEXT)
+    phone = Column(TINYTEXT)
+    first_name = Column(TINYTEXT)
+    last_name = Column(TINYTEXT)
+    birthdate = Column(TIMESTAMP)
+    about_you = Column(TEXT)
+    gender = Column(TINYINT)
+    account_type = Column(TINYINT)
+    facebook = Column(TINYINT)
+    instagram = Column(TINYINT)
+    timestamp_edited = Column(TIMESTAMP)
 
 
-class UserImages(Base):
-    __tablename__ = "user_images"
+class Relationships(Base):
+    __tablename__ = "relationships"
 
-    ID = Column(INTEGER, primary_key=True)
-    s_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    chat = Column(TINYINT)
-    profile = Column(TINYINT)
-    bio = Column(TINYINT)
-    banner = Column(TINYINT)
-    image_key = Column(TINYTEXT)
-    image = Column(TEXT, unique=True)
-    size = Column(TINYINT)
-    timestamp = Column(TIMESTAMP)
+    relationship_id = Column(INTEGER, primary_key=True)
+    relationship_type = Column(TINYINT)
+    user_id_1 = Column(INTEGER)
+    user_id_2 = Column(INTEGER)
+    pending_response = Column(TINYINT)
+    target = Column(INTEGER)
+
+
+class Ratings(Base):
+    __tablename__ = "ratings"
+
+    rating_id = Column(INTEGER, primary_key=True)
+    rater = Column(INTEGER)
+    rated = Column(INTEGER)
+    rating = Column(TINYINT)
+
+
+class AccountTypes(Base):
+    __tablename__ = "account_types"
+
+    ID = Column(TINYINT, primary_key=True)
+    account_type = Column(TINYTEXT)
 
 
 class UserInformation(Base):
     __tablename__ = "user_information"
 
+    user_id = Column(INTEGER, primary_key=True)
+    height_ft_in = Column(DECIMAL)
+    weight_lb = Column(INTEGER)
+    height_cm = Column(INTEGER)
+    weight_kg = Column(INTEGER)
+    body_fat_percentage = Column(INTEGER)
+    fitness_level = Column(INTEGER)
+
+
+class Genders(Base):
+    __tablename__ = "genders"
+
     ID = Column(INTEGER, primary_key=True)
-    user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    first_name = Column(TINYTEXT)
-    middle_name = Column(TINYTEXT)
-    last_name = Column(TINYTEXT)
-    email = Column(VARCHAR(255), unique=True)
-    phone = Column(VARCHAR(32), unique=True)
-    birthday = Column(DATETIME)
-    gender = Column(TINYINT)
-    location = Column(TINYTEXT)
-    timestamp = Column(TIMESTAMP)
-    SSN = Column(VARCHAR(16), unique=True)
+    gender = Column(TINYTEXT)
 
 
-class UserRatingHistory(Base):
-    __tablename__ = "user_rating_history"
-    ID = Column(BigInteger, primary_key=True)
-    timestamp = Column(TIMESTAMP)
-    s_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    r_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    rating = Column(TINYINT)
-    comment = Column(TINYTEXT)
-    request_history_id = Column(BigInteger)
+class FitnessLevel(Base):
+    __tablename__ = "fitness_level"
+
+    level = Column(INTEGER, primary_key=True)
+    description = Column(TINYTEXT)
 
 
-class UserStats(Base):
-    __tablename__ = "user_stats"
+class FitnessGoals(Base):
+    __tablename__ = "fitness_goals"
+
     ID = Column(INTEGER, primary_key=True)
-    user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    timestamp = Column(TIMESTAMP)
-    height = Column(TINYINT)
-    weight = Column(SMALLINT)
-    experience = Column(TINYINT)
-    fat_percentage = Column(TINYINT)
-    fitness_level = Column(TINYINT)
-    fitness_goals = Column(TINYINT)
-    ava_dotw = Column(TINYINT)
-    ava_hr_start = Column(TIME)
-    ava_hr_end = Column(TIME)
-    pricing_per_hour = Column(SMALLINT)
+    user_id = Column(INTEGER)
+    goal = Column(TINYTEXT)
 
 
-class UserToken(Base):
-    __tablename__ = "user_token"
+class AvailableDays(Base):
+    __tablename__ = "available_days"
+
     ID = Column(INTEGER, primary_key=True)
-    user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    auth_level = Column(TINYINT)
+    user_id = Column(INTEGER)
+    day = Column(TINYTEXT)
+    start_time = Column(TIMESTAMP)
+    end_time = Column(TIMESTAMP)
+
+
+class TrainerInformation(Base):
+    __tablename__ = "trainer_information"
+
+    user_id = Column(INTEGER, primary_key=True)
+    social_security_number = Column(TINYTEXT)
+    identification = Column(TINYTEXT)
+    rate = Column(INTEGER)
+    payment_method = Column(TINYTEXT)
+    certification_photo = Column(TINYTEXT)
+
+
+class TrainerStats(Base):
+    __tablename__ = "trainer_stats"
+
+    trainer_id = Column(INTEGER, primary_key=True)
+    wallet_balance = Column(DECIMAL)
+    earnings_total = Column(DECIMAL)
+    taxes_total = Column(DECIMAL)
+    hours_worked = Column(DECIMAL)
+    sessions_worked = Column(INTEGER)
+    categories_assigned = Column(INTEGER)
+    client_count = Column(INTEGER)
+    steps = Column(INTEGER)
+    distance = Column(INTEGER)
+
+
+class TrainerClientHistory(Base):
+    __tablename__ = "trainer_client_history"
+
+    session_id = Column(INTEGER, primary_key=True)
+    trainer_id = Column(INTEGER)
+    client_id = Column(INTEGER)
+    timestamp = Column(TIMESTAMP)
+
+
+class Specializations(Base):
+    __tablename__ = "specializations"
+
+    ID = Column(INTEGER, primary_key=True)
+    user_id = Column(INTEGER)
+    specialization = Column(TINYTEXT)
+
+
+class Tokens(Base):
+    __tablename__ = "tokens"
+
+    token_id = Column(INTEGER, primary_key=True)
     token = Column(TINYTEXT)
-
-
-class TrainerAcceptionStatus(Base):
-    __tablename__ = "trainer_acception_status"
-    ID = Column(INTEGER, primary_key=True)
     user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
+        ForeignKey("registration.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
     )
-    is_trainer = Column(TINYINT)
-    is_pending = Column(TINYINT)
-    timestamp = Column(TIMESTAMP)
-
-
-class RequestHistory(Base):
-    __tablename__ = "request_history"
-    ID = Column(BigInteger, primary_key=True)
-
-    s_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    r_user_id = Column(
-        ForeignKey("users.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
-    timestamp_START = Column(TIMESTAMP)
-    timestamp_DEAD = Column(TIMESTAMP)
-    status = Column(TINYINT)
-    price_per_hour = Column(INTEGER)
-    timestamp_start_session = Column(TIMESTAMP)
-    timestamp_end_session = Column(TIMESTAMP)
-    fitness_categories = Column(INTEGER)
+    auth_level = Column(INTEGER)
