@@ -33,13 +33,13 @@ router = APIRouter()
 @router.get("/v1/profile/avatar/{user_id}", tags=["profile"])
 async def get_profile_picture(user_id: str) -> json:
     "Get the profile picture of a user by their ID."
-    if not os.path.exists(f"images\{user_id}\profile.jpeg"):
+    if not os.path.exists(rf"images\{user_id}\profile.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a profile picture.",
         )
 
-    return FileResponse(f"images\{user_id}\profile.jpeg")
+    return FileResponse(rf"images\{user_id}\profile.jpeg")
 
 
 @router.post("/v1/profile/avatar/{token}", tags=["profile"])
@@ -94,13 +94,13 @@ async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> js
 @router.get("/v1/profile/background/{user_id}", tags=["profile"])
 async def get_background_picture(user_id: str) -> json:
     "Get the background picture of a user by their ID."
-    if not os.path.exists(f"images\{user_id}\background.jpeg"):
+    if not os.path.exists(rf"images\{user_id}\background.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a background picture.",
         )
 
-    return FileResponse(f"images\{user_id}\background.jpeg")
+    return FileResponse(rf"images\{user_id}\background.jpeg")
 
 
 @router.post("/v1/profile/background/{token}", tags=["profile"])
@@ -150,13 +150,13 @@ async def upload_background_picture(token: str, file: UploadFile = File(...)) ->
 @router.get("/v1/profile/gallery/{user_id}/{picture_id}", tags=["profile"])
 async def get_gallery_picture(user_id: str, picture_id: str) -> json:
     "Get the gallery picture of a user by their ID and picture ID"
-    if not os.path.exists(f"images\{user_id}\gallery\{picture_id}.jpeg"):
+    if not os.path.exists(rf"images\{user_id}\gallery\{picture_id}.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a background picture.",
         )
 
-    return FileResponse(f"images\{user_id}\gallery\{picture_id}.jpeg")
+    return FileResponse(rf"images\{user_id}\gallery\{picture_id}.jpeg")
 
 
 @router.post("/v1/profile/gallery/{token}", tags=["profile"])
@@ -205,8 +205,10 @@ async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> js
 
 @router.get("/v1/profile/details/{token}/{user_id}", tags=["profile"])
 async def get_profile_details(user_id: str) -> json:
-    registration_sql = select(Registration).where(Registration.user_id == user_id)
-    fitness_goals_sql = select(FitnessGoals).where(FitnessGoals.user_id == user_id)
+    registration_sql = select(Registration).where(
+        Registration.user_id == user_id)
+    fitness_goals_sql = select(FitnessGoals).where(
+        FitnessGoals.user_id == user_id)
     ratings_sql = select(Ratings).where(Ratings.rated == user_id)
     relationship_sql = select(Relationships).where(
         or_(Relationships.user_id_1 == user_id, Relationships.user_id_2 == user_id)
@@ -224,8 +226,8 @@ async def get_profile_details(user_id: str) -> json:
     registration_data = registration_data.rows2dict()
     if len(registration_data) == 0:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="This user does not exist."
-        )
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This user does not exist.")
     else:
         name = (
             registration_data[0].get("first_name")
@@ -265,7 +267,8 @@ async def get_profile_details(user_id: str) -> json:
     if len(ratings_data) == 0:
         ratings = None
     else:
-        ratings = sum([rating.get("rating") for rating in ratings]) / (len(ratings)) * 5
+        ratings = sum([rating.get("rating")
+                       for rating in ratings]) / (len(ratings)) * 5
 
     account_type_value = registration_data[0].get("account_type")
     if account_type_value == 0:
@@ -281,11 +284,12 @@ async def get_profile_details(user_id: str) -> json:
         partners = 0
         trainers = 0
     else:
-        relationships = [int(r.get("relationship_type")) for r in relationship_data]
+        relationships = [int(r.get("relationship_type"))
+                         for r in relationship_data]
         partners = relationships.count(0)
         trainers = relationships.count(1)
 
-    path = f"images\{user_id}\gallery\*"
+    path = rf"images\{user_id}\gallery\*"
     files = glob.glob(path)
     photo_count = len(files)
     gallery = [os.path.basename(x)[:-5] for x in files]

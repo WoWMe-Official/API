@@ -147,6 +147,8 @@ class Tokens(Base):
     token_id = Column(INTEGER, primary_key=True)
     token = Column(TINYTEXT)
     user_id = Column(
-        ForeignKey("registration.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
-    )
+        ForeignKey(
+            "registration.user_id",
+            ondelete="RESTRICT",
+            onupdate="RESTRICT"))
     auth_level = Column(INTEGER)

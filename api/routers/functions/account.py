@@ -30,23 +30,23 @@ async def sanitize_email(email: str):
 
 async def sanity_check(signup: signup):
     if not re.fullmatch(
-        pattern="^[A-Za-z0-9-_ ]*$", string=signup.personal_information.first_name
-    ):
+            pattern="^[A-Za-z0-9-_ ]*$",
+            string=signup.personal_information.first_name):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Unsupported name format, please try again.",
         )
 
     if not re.fullmatch(
-        pattern="^[A-Za-z0-9-_ ]*$", string=signup.personal_information.last_name
-    ):
+            pattern="^[A-Za-z0-9-_ ]*$",
+            string=signup.personal_information.last_name):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Unsupported name format, please try again.",
         )
 
     if not re.fullmatch(
-        pattern="^[\(\)0-9-]*$", string=signup.personal_information.phone
+        pattern=r"^[\(\)0-9-]*$", string=signup.personal_information.phone
     ):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -54,7 +54,7 @@ async def sanity_check(signup: signup):
         )
 
     if not re.fullmatch(
-        pattern="^[A-Za-z0-9!@#$%^&*\(\)-_ ]{1,128}$",
+        pattern=r"^[A-Za-z0-9!@#$%^&*\(\)-_ ]{1,128}$",
         string=signup.personal_information.password,
     ):
         raise HTTPException(
@@ -86,7 +86,7 @@ async def sanity_check(signup: signup):
 
     if signup.role.isTrainer:
         if not re.fullmatch(
-            pattern="^\d{3}-\d{2}-\d{4}$",
+            pattern=r"^\d{3}-\d{2}-\d{4}$",
             string=signup.trainer_information.social_security_number,
         ):
             raise HTTPException(
@@ -208,7 +208,8 @@ async def sign_up_account(signup: signup):
             pack["user_id"] = uuid
             pack["specialization"] = specialization
             specialization_list.append(pack)
-        sql_insert_specializations = insert(Specializations).values(specialization_list)
+        sql_insert_specializations = insert(
+            Specializations).values(specialization_list)
 
         async with USERDATA_ENGINE.get_session() as session:
             session: AsyncSession = session
@@ -224,4 +225,6 @@ async def sign_up_account(signup: signup):
         session: AsyncSession = session
         async with session.begin():
             await session.execute(sql_create_token)
-    raise HTTPException(status_code=status.HTTP_201_CREATED, detail=authorization_token)
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED,
+        detail=authorization_token)

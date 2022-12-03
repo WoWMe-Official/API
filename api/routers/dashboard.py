@@ -33,8 +33,8 @@ async def get_dashboard_information(token: str) -> json:
 
     if len(uuid_data) == 0:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token parameter."
-        )
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token parameter.")
 
     uuid = uuid_data[0].get("user_id")
 

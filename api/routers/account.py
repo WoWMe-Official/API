@@ -27,13 +27,13 @@ async def sign_up(signup: account_models.signup) -> json:
             detail="Please mark your account as a trainer, user, or both.",
         )
 
-    if (signup.role.isTrainer == True) & (signup.trainer_information == None):
+    if (signup.role.isTrainer) & (signup.trainer_information is None):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Missing trainer sign-up information. Please try again with the correct information attached in payload.",
         )
 
-    if (signup.role.isUser == True) & (signup.user_information == None):
+    if (signup.role.isUser) & (signup.user_information is None):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Missing user sign-up information. Please try again with the correct information attached in payload.",
@@ -80,6 +80,8 @@ async def login_to_your_account(
 
     if len(data) == 0:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Access not permitted."
-        )
-    raise HTTPException(status_code=status.HTTP_200_OK, detail=data[0].get("token"))
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Access not permitted.")
+    raise HTTPException(
+        status_code=status.HTTP_200_OK,
+        detail=data[0].get("token"))
