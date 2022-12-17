@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 async def hashbrown(password: str):
-    """hashes and salts password"""
+    """**************** DO NOT MODIFY ****************"""
     string = password + salt
     return hashlib.sha256(string.encode()).hexdigest()
 
