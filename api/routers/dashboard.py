@@ -8,6 +8,7 @@ from sqlalchemy.sql.expression import select, update
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
 from api.database.models import Tokens, TrainerClientHistory, TrainerStats
+from api.routers.functions.general import get_token_user_id
 
 router = APIRouter()
 
@@ -15,22 +16,7 @@ router = APIRouter()
 @router.get("/v1/dashboard/{token}", tags=["dashboard"])
 async def get_dashboard_information(token: str) -> json:
 
-    sql_select_user_id = select(Tokens).where(Tokens.token == token)
-
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            uuid_data = await session.execute(sql_select_user_id)
-
-    uuid_data = sqlalchemy_result(uuid_data)
-    uuid_data = uuid_data.rows2dict()
-
-    if len(uuid_data) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token parameter."
-        )
-
-    uuid = uuid_data[0].get("user_id")
+    uuid = await get_token_user_id(token=token)
 
     sql_select_trainer_stats = select(TrainerStats).where(
         TrainerStats.trainer_id == uuid

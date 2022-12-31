@@ -1,6 +1,9 @@
 import json
 
 from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
+import api.routers.models.challenge as challenge_models
+from api.routers.functions.general import get_token_user_id
 
 router = APIRouter()
 
@@ -29,3 +32,13 @@ async def get_challenge_details(token: str, challenge_id: str) -> json:
     Leaderboard: array: {name: string, pace: number, distance: number}
     }
     """
+
+
+@router.post("/v1/challenge/{token}", tags=["challenge"])
+async def start_challenge(
+    token: str, challenge_details: challenge_models.challenge_details
+) -> json:
+
+    uuid = await get_token_user_id(token=token)
+
+    return
