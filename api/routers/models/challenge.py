@@ -32,4 +32,4 @@ class challenge_details(BaseModel):
     distance: int
     reward: str
     organization: organization
-    leaderboard: int
+    leaderboard: leaderboard
