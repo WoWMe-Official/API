@@ -72,6 +72,7 @@ class ChallengeDetailsDay(Base):
     __tablename__ = "challenge_details_day"
 
     ID = Column(INTEGER, primary_key=True)
+    day_hash = Column(TEXT)
     day_id = Column(INTEGER)
     start_time = Column(TIMESTAMP)
     end_time = Column(TIMESTAMP)

@@ -8,6 +8,7 @@ from api.database.models import (
     Organization,
     ChallengeDetailsDay,
 )
+import hashlib
 import api.routers.models.challenge as challenge_models
 from api.routers.functions.general import get_token_user_id
 import json
@@ -28,28 +29,68 @@ router = APIRouter()
 
 @router.get("/v1/challenge/{token}/{challenge_id}", tags=["challenge"])
 async def get_challenge_details(token: str, challenge_id: str) -> json:
-    """
-    Get Challenge Details
-    Params:
-    {
-    Challenge id: number,
-    Token: string,
-    }
 
-    Returns:
-    {
-    Name: string,
-    Background: string,
-    Profile picture: string,
-    Description: string,
-    Start date: string,
-    End date: string,
-    Distance: number,
-    Reward: string,
-    Organization: { name: string, image: string, distance: number}
-    Leaderboard: array: {name: string, pace: number, distance: number}
-    }
-    """
+    uuid = await get_token_user_id(token=token)
+
+    select_challenge_sql = select(Challenge).where(Challenge.id == challenge_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            challenge_data = await session.execute(select_challenge_sql)
+
+    challenge_result = sqlalchemy_result(challenge_data)
+    challenge_result = challenge_result.rows2dict()
+
+    start_id = challenge_result[0].get("start_date")
+    end_id = challenge_result[0].get("end_date")
+    organization_id = challenge_result[0].get("organization")
+    leaderboard_id = challenge_result[0].get("leaderboard")
+
+    sql_start = select(ChallengeDetailsDay).where(ChallengeDetailsDay.ID == start_id)
+    sql_end = select(ChallengeDetailsDay).where(ChallengeDetailsDay.ID == end_id)
+    sql_organization = select(Organization).where(Organization.ID == organization_id)
+    sql_leaderboard = select(Organization).where(Leaderboard.ID == leaderboard_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            start_data = await session.execute(sql_start)
+            end_data = await session.execute(sql_end)
+            organization_data = await session.execute(sql_organization)
+            leaderboard_data = await session.execute(sql_leaderboard)
+
+    start_result = sqlalchemy_result(start_data)
+    end_result = sqlalchemy_result(end_data)
+    organization_result = sqlalchemy_result(organization_data)
+    leaderboard_result = sqlalchemy_result(leaderboard_data)
+
+    start_result = start_result.rows2dict()
+    end_result = end_result.rows2dict()
+    organization_result = organization_result.rows2dict()
+    leaderboard_result = leaderboard_result.rows2dict()
+
+    challenge_result[0]["start_date"] = start_result[0]
+    challenge_result[0]["end_date"] = end_result[0]
+    challenge_result[0]["organization"] = organization_result[0]
+    challenge_result[0]["leaderboard"] = leaderboard_result[0]
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail=challenge_result)
+
+
+def time_to_string(time):
+    return f"{time.year}{time.month}{time.day}{time.hour}{time.minute}{time.second}"
+
+
+def day_obj_to_string(day):
+    start_string = time_to_string(day.start_time)
+    end_string = time_to_string(day.end_time)
+    return f"{start_string}{end_string}"
+
+
+def hash_day(day):
+    day_string = day_obj_to_string(day)
+    return hashlib.sha256(day_string.encode()).hexdigest()
 
 
 @router.post("/v1/challenge/{token}", tags=["challenge"])
@@ -71,7 +112,11 @@ async def start_challenge(
         pace=challenge_details.leaderboard.pace,
     )
 
+    start_hash = hash_day(challenge_details.start_date)
+    end_hash = hash_day(challenge_details.end_date)
+
     insert_start_date = insert(ChallengeDetailsDay).values(
+        day_hash=start_hash,
         day_id=challenge_details.start_date.day,
         start_time=challenge_details.start_date.start_time,
         end_time=challenge_details.start_date.end_time,
@@ -79,6 +124,7 @@ async def start_challenge(
     )
 
     insert_end_date = insert(ChallengeDetailsDay).values(
+        day_hash=end_hash,
         day_id=challenge_details.end_date.day,
         start_time=challenge_details.end_date.start_time,
         end_time=challenge_details.end_date.end_time,
@@ -114,30 +160,16 @@ async def start_challenge(
     )
 
     select_start_date_sql = select(ChallengeDetailsDay).where(
-        ChallengeDetailsDay.day_id == challenge_details.start_date.day
-    )
-    select_start_date_sql = select_start_date_sql.where(
-        ChallengeDetailsDay.start_time == challenge_details.start_date.start_time
-    )
-    select_start_date_sql = select_start_date_sql.where(
-        ChallengeDetailsDay.end_time == challenge_details.start_date.end_time
+        ChallengeDetailsDay.day_hash == start_hash
     )
     select_start_date_sql = select_start_date_sql.where(
         ChallengeDetailsDay.is_start == 1
     )
 
     select_end_date_sql = select(ChallengeDetailsDay).where(
-        ChallengeDetailsDay.day_id == challenge_details.end_date.day
+        ChallengeDetailsDay.day_hash == end_hash
     )
-    select_end_date_sql = select_end_date_sql.where(
-        ChallengeDetailsDay.start_time == challenge_details.end_date.start_time
-    )
-    select_end_date_sql = select_end_date_sql.where(
-        ChallengeDetailsDay.end_time == challenge_details.end_date.end_time
-    )
-    select_end_date_sql = select_end_date_sql.where(
-        ChallengeDetailsDay.is_start == False
-    )
+    select_end_date_sql = select_end_date_sql.where(ChallengeDetailsDay.is_start == 0)
 
     async with USERDATA_ENGINE.get_session() as session:
         session: AsyncSession = session
@@ -211,11 +243,16 @@ async def start_challenge(
         session: AsyncSession = session
         async with session.begin():
             await session.execute(insert_challenge_sql)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(insert_challenge_sql)
             challenge_data = await session.execute(select_challenge_sql)
 
     challenge_result = sqlalchemy_result(challenge_data)
     challenge_result = challenge_result.rows2dict()
-    challenge_result_id = challenge_result[0].get("ID")
+    challenge_result_id = challenge_result[0].get("id")
 
     raise HTTPException(
         status_code=status.HTTP_201_CREATED, detail=f"{challenge_result_id}"
