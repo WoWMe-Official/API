@@ -1,4 +1,4 @@
-from sqlalchemy import DECIMAL, INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey
+from sqlalchemy import DECIMAL, INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey, FLOAT
 from sqlalchemy.dialects.mysql import TEXT, TINYINT, VARCHAR
 from sqlalchemy.dialects.mysql.types import TINYTEXT
 from sqlalchemy.ext.declarative import declarative_base
@@ -194,3 +194,27 @@ class Tokens(Base):
         ForeignKey("registration.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
     )
     auth_level = Column(INTEGER)
+
+
+class WorkoutPlan(Base):
+    __tablename__ = "workout_plan"
+    id = Column(INTEGER, primary_key=True)
+    name = Column(TEXT, nullable=False)
+    rating = Column(FLOAT)
+    workouts_completed = Column(INTEGER)
+    fitness_level = Column(TEXT)
+
+
+class Stats(Base):
+    __tablename__ = "stats"
+    id = Column(INTEGER, primary_key=True)
+    title = Column(TEXT, nullable=False)
+    stat = Column(INTEGER)
+
+
+class Workout(Base):
+    __tablename__ = "workout"
+    id = Column(INTEGER, primary_key=True)
+    workout = Column(TEXT, nullable=False)
+    reps = Column(INTEGER)
+    weight = Column(FLOAT)

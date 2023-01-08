@@ -2,8 +2,16 @@ import json
 
 from fastapi import APIRouter
 from sqlalchemy.sql.expression import select, update
+import api.routers.models.workout as workout_models
 
 router = APIRouter()
+
+
+@router.post("/v1/workout/{token}", tags=["workout"])
+async def post_workout_plan(
+    token: str, workout_plan: workout_models.workout_plan
+) -> json:
+    return
 
 
 @router.get("/v1/workout/{token}/{user_id}", tags=["workout"])
