@@ -200,6 +200,7 @@ class WorkoutPlan(Base):
     __tablename__ = "workout_plan"
     id = Column(INTEGER, primary_key=True)
     name = Column(TEXT, nullable=False)
+    uuid = Column(INTEGER)
     rating = Column(FLOAT)
     workouts_completed = Column(INTEGER)
     fitness_level = Column(TEXT)
@@ -208,6 +209,8 @@ class WorkoutPlan(Base):
 class Stats(Base):
     __tablename__ = "stats"
     id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER)
+    hash = Column(TEXT)
     title = Column(TEXT, nullable=False)
     stat = Column(INTEGER)
 
@@ -215,6 +218,27 @@ class Stats(Base):
 class Workout(Base):
     __tablename__ = "workout"
     id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER)
+    hash = Column(TEXT)
     workout = Column(TEXT, nullable=False)
     reps = Column(INTEGER)
     weight = Column(FLOAT)
+
+
+class StatWorkoutHash(Base):
+    __tablename__ = "stat_workout_hash"
+    id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER)
+    stat = Column(TEXT, nullable=False)
+    workout = Column(TEXT, nullable=False)
+
+
+class Event(Base):
+    __tablename__ = "events"
+    id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER, nullable=False)
+    hash = Column(TEXT, nullable=False)
+    background_image = Column(TEXT, nullable=False)
+    title = Column(TEXT, nullable=False)
+    num_excercises = Column(INTEGER, nullable=False)
+    difficulty = Column(TEXT, nullable=False)
