@@ -1,4 +1,4 @@
-from sqlalchemy import DECIMAL, INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey
+from sqlalchemy import DECIMAL, INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey, FLOAT
 from sqlalchemy.dialects.mysql import TEXT, TINYINT, VARCHAR
 from sqlalchemy.dialects.mysql.types import TINYTEXT
 from sqlalchemy.ext.declarative import declarative_base
@@ -66,6 +66,48 @@ class UserInformation(Base):
     weight_kg = Column(INTEGER)
     body_fat_percentage = Column(INTEGER)
     fitness_level = Column(INTEGER)
+
+
+class ChallengeDetailsDay(Base):
+    __tablename__ = "challenge_details_day"
+
+    ID = Column(INTEGER, primary_key=True)
+    day_hash = Column(TEXT)
+    day_id = Column(INTEGER)
+    start_time = Column(TIMESTAMP)
+    end_time = Column(TIMESTAMP)
+    is_start = Column(INTEGER)
+
+
+class Organization(Base):
+    __tablename__ = "organization"
+    ID = Column(INTEGER, primary_key=True, autoincrement=True)
+    name = Column(TEXT)
+    image_route = Column(TEXT)
+    distance = Column(INTEGER)
+
+
+class Leaderboard(Base):
+    __tablename__ = "leaderboard"
+    ID = Column(INTEGER, primary_key=True, autoincrement=True)
+    name = Column(TEXT, nullable=False)
+    pace = Column(INTEGER, nullable=False)
+    distance = Column(INTEGER, nullable=False)
+
+
+class Challenge(Base):
+    __tablename__ = "challenges"
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    name = Column(TEXT, nullable=False)
+    background = Column(TEXT, nullable=False)
+    profile_picture = Column(TEXT, nullable=False)
+    description = Column(TEXT, nullable=False)
+    start_date = Column(INTEGER, nullable=False)
+    end_date = Column(INTEGER, nullable=False)
+    distance = Column(INTEGER, nullable=False)
+    reward = Column(TEXT, nullable=False)
+    organization = Column(INTEGER, nullable=False)
+    leaderboard = Column(INTEGER, nullable=False)
 
 
 class Genders(Base):
@@ -152,3 +194,51 @@ class Tokens(Base):
         ForeignKey("registration.user_id", ondelete="RESTRICT", onupdate="RESTRICT")
     )
     auth_level = Column(INTEGER)
+
+
+class WorkoutPlan(Base):
+    __tablename__ = "workout_plan"
+    id = Column(INTEGER, primary_key=True)
+    name = Column(TEXT, nullable=False)
+    uuid = Column(INTEGER)
+    rating = Column(FLOAT)
+    workouts_completed = Column(INTEGER)
+    fitness_level = Column(TEXT)
+
+
+class Stats(Base):
+    __tablename__ = "stats"
+    id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER)
+    hash = Column(TEXT)
+    title = Column(TEXT, nullable=False)
+    stat = Column(INTEGER)
+
+
+class Workout(Base):
+    __tablename__ = "workout"
+    id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER)
+    hash = Column(TEXT)
+    workout = Column(TEXT, nullable=False)
+    reps = Column(INTEGER)
+    weight = Column(FLOAT)
+
+
+class StatWorkoutHash(Base):
+    __tablename__ = "stat_workout_hash"
+    id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER)
+    stat = Column(TEXT, nullable=False)
+    workout = Column(TEXT, nullable=False)
+
+
+class Event(Base):
+    __tablename__ = "events"
+    id = Column(INTEGER, primary_key=True)
+    uuid = Column(INTEGER, nullable=False)
+    hash = Column(TEXT, nullable=False)
+    background_image = Column(TEXT, nullable=False)
+    title = Column(TEXT, nullable=False)
+    num_excercises = Column(INTEGER, nullable=False)
+    difficulty = Column(TEXT, nullable=False)
