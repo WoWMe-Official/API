@@ -64,11 +64,10 @@ async def login_to_your_account(
     email = login_information.email
     password = await hashbrown(login_information.password)
 
-    registrationTable = Registration
-    tokensTable = Tokens
-    sql = select(tokensTable)
-    sql = sql.where(registrationTable.email == email)
-    sql = sql.where(registrationTable.password == password)
+    sql = select(Tokens)
+    sql = sql.join(Registration, Tokens.user_id == Registration.user_id)
+    sql = sql.where(Registration.email == email)
+    sql = sql.where(Registration.password == password)
 
     async with USERDATA_ENGINE.get_session() as session:
         session: AsyncSession = session
