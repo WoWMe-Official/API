@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 from sqlalchemy.sql.expression import select
+from api.routers.functions.general import get_token_user_id
 
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
@@ -204,8 +205,10 @@ async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> js
     )
 
 
-@router.get("/v1/profile/details/{user_id}", tags=["profile"])
-async def get_profile_details(user_id: str) -> json:
+@router.get("/v1/profile/details/{token}/{user_id}", tags=["profile"])
+async def get_profile_details(token: str, user_id: str) -> json:
+    uuid = await get_token_user_id(token=token)
+
     registration_sql = select(Registration).where(Registration.user_id == user_id)
     fitness_goals_sql = select(FitnessGoals).where(FitnessGoals.user_id == user_id)
     ratings_sql = select(Ratings).where(Ratings.rated == user_id)
@@ -291,16 +294,33 @@ async def get_profile_details(user_id: str) -> json:
     photo_count = len(files)
     gallery = [os.path.basename(x)[:-5] for x in files]
 
+    ## dict construction
+
     response = dict()
-    response["name"] = name
-    response["about"] = about
-    response["type"] = account_type
-    response["goals"] = goals
-    response["rate"] = rate
-    response["partners"] = partners
-    response["trainers"] = trainers
-    response["rating"] = ratings
-    response["photo_count"] = photo_count
-    response["gallery"] = gallery
+
+    ## public dict
+
+    public = dict()
+    public["name"] = name
+    public["about"] = about
+    public["type"] = account_type
+    public["goals"] = goals
+    public["rate"] = rate
+    public["partners"] = partners
+    public["trainers"] = trainers
+    public["rating"] = ratings
+    public["photo_count"] = photo_count
+    public["gallery"] = gallery
+
+    response["public"] = public
+    ## if querying self profile
+
+    if int(uuid) == int(user_id):
+        print("hello")
+        private = dict()
+        private["birthdate"] = registration_data[0].get("birthdate")
+        private["phone"] = registration_data[0].get("phone")
+
+        response["private"] = private
 
     return response
