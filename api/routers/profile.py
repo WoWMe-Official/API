@@ -204,7 +204,7 @@ async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> js
     )
 
 
-@router.get("/v1/profile/details/{token}/{user_id}", tags=["profile"])
+@router.get("/v1/profile/details/{user_id}", tags=["profile"])
 async def get_profile_details(user_id: str) -> json:
     registration_sql = select(Registration).where(Registration.user_id == user_id)
     fitness_goals_sql = select(FitnessGoals).where(FitnessGoals.user_id == user_id)
