@@ -46,11 +46,11 @@ async def sanity_check(signup: signup):
         )
 
     if not re.fullmatch(
-        pattern="^[\(\)0-9-]*$", string=signup.personal_information.phone
+        pattern="^\d{3}-\d{3}-\d{4}$", string=signup.personal_information.phone
     ):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Unsupported phone format, please try again.",
+            detail="Unsupported phone format, please try: 555-123-4567",
         )
 
     if not re.fullmatch(
@@ -124,6 +124,12 @@ async def sanity_check(signup: signup):
                 detail="Unlikely trainer rate, please try again.",
             )
 
+        if not signup.trainer_information.payment_method:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Missing payment method.",
+            )
+
 
 async def examine_email(email: str):
     registration = Registration
@@ -181,6 +187,15 @@ async def sign_up_account(signup: signup):
             detail="A server-side error occured during registration. Support is on the way!",
         )
 
+    ## token creation
+
+    authorization_token = await generate_token()
+    sql_create_token = insert(Tokens).values(
+        token=authorization_token, user_id=uuid, auth_level=0
+    )
+
+    ## user detail check
+
     if signup.role.isUser:
         sql_insert_user_information = insert(UserInformation).values(
             user_id=uuid,
@@ -218,6 +233,9 @@ async def sign_up_account(signup: signup):
                 await session.execute(sql_insert_user_information)
                 await session.execute(sql_insert_goals)
                 await session.execute(sql_insert_available_days)
+                await session.execute(sql_create_token)
+
+    ## trainer information check
 
     if signup.role.isTrainer:
 
@@ -241,13 +259,6 @@ async def sign_up_account(signup: signup):
             async with session.begin():
                 await session.execute(sql_insert_trainer_information)
                 await session.execute(sql_insert_specializations)
+                await session.execute(sql_create_token)
 
-    authorization_token = await generate_token()
-    sql_create_token = insert(Tokens).values(
-        token=authorization_token, user_id=uuid, auth_level=0
-    )
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            await session.execute(sql_create_token)
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=authorization_token)
