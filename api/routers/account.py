@@ -81,4 +81,7 @@ async def login_to_your_account(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Access not permitted."
         )
-    raise HTTPException(status_code=status.HTTP_200_OK, detail=data[0].get("token"))
+    response = dict()
+    response["token"] = data[0].get("token")
+    response["user_id"] = data[0].get("user_id")
+    return response
