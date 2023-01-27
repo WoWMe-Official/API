@@ -215,6 +215,13 @@ class Stats(Base):
     stat = Column(INTEGER)
 
 
+class Blocks(Base):
+    __tablename__ = "blocks"
+    id = Column(INTEGER, primary_key=True)
+    blocker_id = Column(INTEGER)
+    blocked_id = Column(INTEGER)
+
+
 class Workout(Base):
     __tablename__ = "workout"
     id = Column(INTEGER, primary_key=True)

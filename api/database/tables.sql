@@ -106,6 +106,12 @@ CREATE TABLE `relationships` (
  `target` int NOT NULL,
  PRIMARY KEY (`relationship_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+CREATE TABLE `blocks` (
+ `id` bigint NOT NULL AUTO_INCREMENT,
+ `blocker_id` int NOT NULL,
+ `blocked_id` int NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `specializations` (
  `ID` int NOT NULL AUTO_INCREMENT,
  `user_id` int NOT NULL,

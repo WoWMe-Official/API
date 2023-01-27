@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 from sqlalchemy.sql.expression import select
-from api.routers.functions.general import get_token_user_id
+from api.routers.functions.general import get_token_user_id, check_user_block
 
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
@@ -208,6 +208,12 @@ async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> js
 @router.get("/v1/profile/details/{token}/{user_id}", tags=["profile"])
 async def get_profile_details(token: str, user_id: str) -> json:
     uuid = await get_token_user_id(token=token)
+
+    if await check_user_block(blocked_id=uuid, blocker_id=user_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="You have been blocked by this user.",
+        )
 
     registration_sql = select(Registration).where(Registration.user_id == user_id)
     fitness_goals_sql = select(FitnessGoals).where(FitnessGoals.user_id == user_id)

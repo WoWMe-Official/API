@@ -3,13 +3,14 @@ import json
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import select
+from sqlalchemy.sql.expression import select, insert, delete
 
 import api.routers.functions.account as account_functions
 import api.routers.models.account as account_models
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import hashbrown, sqlalchemy_result
-from api.database.models import Registration, Tokens
+from api.database.models import Registration, Tokens, Blocks
+from api.routers.functions.general import get_token_user_id
 
 router = APIRouter()
 
@@ -85,3 +86,37 @@ async def login_to_your_account(
     response["token"] = data[0].get("token")
     response["user_id"] = data[0].get("user_id")
     return response
+
+
+@router.post("/v1/account/block/{token}/{user_id}", tags=["account"])
+async def block_user(token: str, user_id: str) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    insert_block = insert(Blocks).values(blocked_id=user_id, blocker_id=uuid)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(insert_block)
+
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED, detail="User has been blocked."
+    )
+
+
+@router.post("/v1/account/unblock/{token}/{user_id}", tags=["account"])
+async def unblock_user(token: str, user_id: str) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    remove_block = delete(Blocks).where(
+        Blocks.blocked_id == user_id, Blocks.blocker_id == uuid
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(remove_block)
+
+    raise HTTPException(
+        status_code=status.HTTP_202_ACCEPTED, detail="User has been unblocked."
+    )
