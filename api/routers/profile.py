@@ -19,8 +19,10 @@ from api.database.models import (
     Ratings,
     Registration,
     Relationships,
+    Specializations,
     Tokens,
     TrainerInformation,
+    UserInformation,
 )
 
 router = APIRouter()
@@ -216,6 +218,9 @@ async def get_profile_details(token: str, user_id: str) -> json:
         )
 
     registration_sql = select(Registration).where(Registration.user_id == user_id)
+    userinformation_sql = select(UserInformation).where(
+        UserInformation.user_id == user_id
+    )
     fitness_goals_sql = select(FitnessGoals).where(FitnessGoals.user_id == user_id)
     ratings_sql = select(Ratings).where(Ratings.rated == user_id)
     relationship_sql = select(Relationships).where(
@@ -226,6 +231,7 @@ async def get_profile_details(token: str, user_id: str) -> json:
         session: AsyncSession = session
         async with session.begin():
             registration_data = await session.execute(registration_sql)
+            userinformation_data = await session.execute(userinformation_sql)
             fitness_goals_data = await session.execute(fitness_goals_sql)
             ratings_data = await session.execute(ratings_sql)
             relationship_data = await session.execute(relationship_sql)
@@ -249,17 +255,48 @@ async def get_profile_details(token: str, user_id: str) -> json:
             TrainerInformation.user_id == user_id
         )
 
+        specializations_sql = select(Specializations).where(
+            Specializations.user_id == user_id
+        )
+
         async with USERDATA_ENGINE.get_session() as session:
             session: AsyncSession = session
             async with session.begin():
                 rate_data = await session.execute(rate_sql)
+                specialization_data = await session.execute(specializations_sql)
 
         rate_data = sqlalchemy_result(rate_data)
         rate_data = rate_data.rows2dict()
         rate = rate_data[0].get("rate")
 
+        specialization_data = sqlalchemy_result(specialization_data)
+        specialization_data = specialization_data.rows2dict()
+
+        specializations = []
+        for specialization in specialization_data:
+            specializations.append(specialization.get("specialization"))
+
     else:
         rate = None
+        specializations = None
+
+    userinformation_data = sqlalchemy_result(userinformation_data)
+    userinformation_data = userinformation_data.rows2dict()
+    if len(userinformation_data) != 0:
+
+        fitness_level = userinformation_data[0].get("fitness_level")
+        body_fat_percentage = userinformation_data[0].get("body_fat_percentage")
+        weight_kg = userinformation_data[0].get("weight_kg")
+        height_cm = userinformation_data[0].get("height_cm")
+        weight_lb = userinformation_data[0].get("weight_lb")
+        height_ft_in = userinformation_data[0].get("height_ft_in")
+    else:
+        fitness_level = None
+        body_fat_percentage = None
+        weight_kg = None
+        height_cm = None
+        weight_lb = None
+        height_ft_in = None
 
     fitness_goals_data = sqlalchemy_result(fitness_goals_data)
     fitness_goals_data = fitness_goals_data.rows2dict()
@@ -317,6 +354,13 @@ async def get_profile_details(token: str, user_id: str) -> json:
     public["rating"] = ratings
     public["photo_count"] = photo_count
     public["gallery"] = gallery
+    public["specializations"] = specializations
+    public["fitness_level"] = fitness_level
+    public["body_fat_percentage"] = body_fat_percentage
+    public["weight_kg"] = weight_kg
+    public["height_cm"] = height_cm
+    public["weight_lb"] = weight_lb
+    public["height_ft_in"] = height_ft_in
 
     response["public"] = public
     ## if querying self profile
