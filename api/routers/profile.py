@@ -366,7 +366,6 @@ async def get_profile_details(token: str, user_id: str) -> json:
     ## if querying self profile
 
     if int(uuid) == int(user_id):
-        print("hello")
         private = dict()
         private["birthdate"] = registration_data[0].get("birthdate")
         private["phone"] = registration_data[0].get("phone")
