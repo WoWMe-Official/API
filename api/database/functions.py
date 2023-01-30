@@ -10,6 +10,7 @@ from collections import namedtuple
 from PIL import Image
 import PIL
 import os
+import ast
 import glob
 
 from sqlalchemy import Text, text
@@ -28,9 +29,15 @@ async def hashbrown(password: str):
     return hashlib.sha256(string.encode()).hexdigest()
 
 
-async def generate_token():
-    token = secrets.token_urlsafe(32)
+async def generate_token(n=32):
+    token = secrets.token_urlsafe(n)
     return token
+
+
+def redis_decode(bytes_encoded) -> list:
+    if type(bytes_encoded) == list:
+        return [ast.literal_eval(element.decode("utf-8")) for element in bytes_encoded]
+    return [ast.literal_eval(bytes_encoded.decode("utf-8"))]
 
 
 async def parse_sql(

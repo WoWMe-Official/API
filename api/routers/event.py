@@ -1,42 +1,16 @@
-import json
-
-from fastapi import APIRouter
-from sqlalchemy.sql.expression import select, update
-import json
-
-from fastapi import APIRouter
-from sqlalchemy.sql.expression import select, update
-from api.routers.functions.general import get_token_user_id
-import api.routers.models.workout as workout_models
-from api.database.models import Stats, Workout, WorkoutPlan, StatWorkoutHash
 import hashlib
-import json
-
-from fastapi import APIRouter
-from fastapi import APIRouter, HTTPException, status
-from api.database.models import (
-    Challenge,
-    Leaderboard,
-    Organization,
-    ChallengeDetailsDay,
-    Event,
-)
-import hashlib
-import api.routers.models.challenge as challenge_models
-from api.routers.functions.general import get_token_user_id
 import json
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import select, update, insert
-
-from api.database.database import USERDATA_ENGINE
-from api.database.functions import sqlalchemy_result
-from api.database.models import Tokens, TrainerClientHistory, TrainerStats
-from api.routers.functions.general import get_token_user_id
+from sqlalchemy.sql.expression import insert, select
 
 import api.routers.models.event as event_models
+from api.database.database import USERDATA_ENGINE
+from api.database.functions import sqlalchemy_result
+from api.database.models import Event
+from api.routers.functions.general import get_token_user_id
 
 router = APIRouter()
 

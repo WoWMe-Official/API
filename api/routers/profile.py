@@ -5,13 +5,12 @@ import time
 
 import cv2
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 from sqlalchemy.sql.expression import select
-from api.routers.functions.general import get_token_user_id, check_user_block
 
+from api.config import route_ip
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
 from api.database.models import (
@@ -24,6 +23,11 @@ from api.database.models import (
     TrainerInformation,
     UserInformation,
 )
+from api.routers.functions.general import (
+    check_user_block,
+    get_token_user_id,
+    image_tokenizer,
+)
 
 router = APIRouter()
 
@@ -31,15 +35,19 @@ router = APIRouter()
 @router.get("/v1/profile/avatar/{user_id}", tags=["profile"])
 async def get_profile_picture(user_id: str) -> json:
     "Get the profile picture of a user by their ID."
-
-    print(f"{os.getcwd()}/images/{user_id}/profile.jpeg")
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/profile.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a profile picture.",
         )
 
-    return FileResponse(f"{os.getcwd()}/images/{user_id}/profile.jpeg")
+    image_route = f"{os.getcwd()}\images\{user_id}\profile.jpeg"
+    image_token = await image_tokenizer(image_route)
+
+    return HTTPException(
+        status_code=status.HTTP_200_OK,
+        detail=f"http://{route_ip}/v1/image/{image_token}",
+    )
 
 
 @router.post("/v1/profile/avatar/{token}", tags=["profile"])
@@ -94,13 +102,19 @@ async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> js
 @router.get("/v1/profile/background/{user_id}", tags=["profile"])
 async def get_background_picture(user_id: str) -> json:
     "Get the background picture of a user by their ID."
-    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/background.jpeg"):
+    if not os.path.exists(f"{os.getcwd()}/images/{user_id}/header.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a background picture.",
         )
 
-    return FileResponse(f"{os.getcwd()}/images/{user_id}/background.jpeg")
+    image_route = f"{os.getcwd()}\images\{user_id}\header.jpeg"
+    image_token = await image_tokenizer(image_route)
+
+    return HTTPException(
+        status_code=status.HTTP_200_OK,
+        detail=f"http://{route_ip}/v1/image/{image_token}",
+    )
 
 
 @router.post("/v1/profile/background/{token}", tags=["profile"])
@@ -122,7 +136,7 @@ async def upload_background_picture(token: str, file: UploadFile = File(...)) ->
         contents = file.file.read()
         path = f"{os.getcwd()}/images/{uuid}"
         temp_path = path + f"/{file.filename}"
-        complete_path = path + "/background.jpeg"
+        complete_path = path + "/header.jpeg"
 
         if not (os.path.exists(path=path)):
             os.mkdir(path=path)
@@ -153,10 +167,16 @@ async def get_gallery_picture(user_id: str, picture_id: str) -> json:
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/gallery/{picture_id}.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="This user does not have a background picture.",
+            detail="This gallery image does not exist.",
         )
 
-    return FileResponse(f"{os.getcwd()}/images/{user_id}/gallery/{picture_id}.jpeg")
+    image_route = f"{os.getcwd()}\images\{user_id}\gallery\{picture_id}.jpeg"
+    image_token = await image_tokenizer(image_route)
+
+    return HTTPException(
+        status_code=status.HTTP_200_OK,
+        detail=f"http://{route_ip}/v1/image/{image_token}",
+    )
 
 
 @router.post("/v1/profile/gallery/{token}", tags=["profile"])
@@ -366,7 +386,6 @@ async def get_profile_details(token: str, user_id: str) -> json:
     ## if querying self profile
 
     if int(uuid) == int(user_id):
-        print("hello")
         private = dict()
         private["birthdate"] = registration_data[0].get("birthdate")
         private["phone"] = registration_data[0].get("phone")

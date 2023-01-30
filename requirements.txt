@@ -1,7 +1,9 @@
 aiofiles==0.8.0
+aioredis==2.0.1
 anyio==3.5.0
 APScheduler==3.8.1
 asgiref==3.5.0
+async-timeout==4.0.2
 asyncmy==0.2.3
 atomicwrites==1.4.0
 attrs==21.4.0

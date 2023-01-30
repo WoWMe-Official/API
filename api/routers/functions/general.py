@@ -5,6 +5,8 @@ from sqlalchemy.sql.expression import select
 
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
+from api.config import redis_client
+from api.database.functions import generate_token
 from api.database.models import Tokens, Blocks
 
 
@@ -44,3 +46,17 @@ async def check_user_block(blocked_id, blocker_id):
     if len(uuid_data) == 0:
         return False
     return True
+
+
+async def image_tokenizer(image_route):
+    image_token = await redis_client.get(name=image_route)
+
+    if not image_token:
+        image_token = await generate_token(16)
+        await redis_client.set(name=image_token, value=image_route, ex=3600)
+        await redis_client.set(name=image_route, value=image_token, ex=3600)
+
+    if type(image_token) != str:
+        image_token = image_token.decode("utf-8")
+
+    return image_token
