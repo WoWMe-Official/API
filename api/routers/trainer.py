@@ -3,14 +3,15 @@ import os
 
 import cv2
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select, update
 
+from api.config import route_ip
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
 from api.database.models import Tokens, TrainerInformation
+from api.routers.functions.general import image_tokenizer
 
 router = APIRouter()
 
@@ -99,7 +100,13 @@ async def evaluate_identification(token: str, user_id: int) -> json:
         )
 
     if auth_level == 9:
-        return FileResponse(f"{os.getcwd()}/images/{user_id}/identification.jpeg")
+        image_route = f"{os.getcwd()}\images\{user_id}\identification.jpeg"
+        image_token = await image_tokenizer(image_route)
+
+        return HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail=f"http://{route_ip}/v1/image/{image_token}",
+        )
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -181,7 +188,13 @@ async def evaluate_certification(token: str, user_id: int) -> json:
         )
 
     if auth_level == 9:
-        return FileResponse(f"{os.getcwd()}/images/{user_id}/certification.jpeg")
+        image_route = f"{os.getcwd()}\images\{user_id}\certification.jpeg"
+        image_token = await image_tokenizer(image_route)
+
+        return HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail=f"http://{route_ip}/v1/image/{image_token}",
+        )
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

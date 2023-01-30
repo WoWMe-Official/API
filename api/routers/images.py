@@ -1,19 +1,9 @@
 import json
 
-from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import select, insert, delete
-from api.config import redis_client
-import api.routers.functions.account as account_functions
-import api.routers.models.account as account_models
-from api.database.database import USERDATA_ENGINE
-from api.database.functions import hashbrown, sqlalchemy_result
-from api.database.models import Registration, Tokens, Blocks
-from api.routers.functions.general import get_token_user_id
+from fastapi import APIRouter
 from fastapi.responses import FileResponse
-import os
-from api.database.functions import redis_decode
+
+from api.config import redis_client
 
 router = APIRouter()
 
