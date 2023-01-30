@@ -6,6 +6,7 @@ import warnings
 
 # import logging_loki
 from dotenv import find_dotenv, load_dotenv
+import aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,6 +14,11 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv(find_dotenv(), verbose=True)
 sql_uri = os.environ.get("sql_uri")
 salt = os.environ.get("salt")
+redis_password = os.environ.get("redis_password")
+redis_database = os.environ.get("redis_database")
+redis_port = os.environ.get("redis_port")
+server_ip = os.environ.get("server_ip")
+
 
 # create application
 app = FastAPI()
@@ -23,6 +29,13 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+redis_client = aioredis.from_url(
+    url=server_ip,
+    port=redis_port,
+    db=redis_database,
+    password=redis_password,
 )
 
 file_handler = logging.FileHandler(filename="logs/error.log", mode="a")

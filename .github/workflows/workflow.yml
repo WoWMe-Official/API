@@ -12,6 +12,10 @@ jobs:
         run: |
           echo "${{ secrets.SQL_URI }}" > .env
           echo "${{ secrets.SALT }}" >> .env
+          echo "${{ secrets.REDIS_PASSWORD }}" >> .env
+          echo "${{ secrets.REDIS_DATABASE }}" >> .env
+          echo "${{ secrets.REDIS_PORT }}" >> .env
+          echo "${{ secrets.SERVER_IP }}" >> .env
 
   deploy:
     runs-on: self-hosted

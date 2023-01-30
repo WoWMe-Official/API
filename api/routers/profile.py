@@ -10,6 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 from sqlalchemy.sql.expression import select
+from api.config import redis_client
+from api.database.functions import generate_token
 from api.routers.functions.general import get_token_user_id, check_user_block
 
 from api.database.database import USERDATA_ENGINE
@@ -31,15 +33,19 @@ router = APIRouter()
 @router.get("/v1/profile/avatar/{user_id}", tags=["profile"])
 async def get_profile_picture(user_id: str) -> json:
     "Get the profile picture of a user by their ID."
+    print("test")
 
-    print(f"{os.getcwd()}/images/{user_id}/profile.jpeg")
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/profile.jpeg"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a profile picture.",
         )
-
-    return FileResponse(f"{os.getcwd()}/images/{user_id}/profile.jpeg")
+    print("test")
+    image_route = f"{os.getcwd()}\images\{user_id}\profile.jpeg"
+    image_token = await generate_token(16)
+    print("test")
+    await redis_client.set(name=image_token, value=image_route, ex=3600)
+    return HTTPException(status_code=status.HTTP_200_OK, detail=image_token)
 
 
 @router.post("/v1/profile/avatar/{token}", tags=["profile"])
