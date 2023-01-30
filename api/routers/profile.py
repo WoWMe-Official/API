@@ -41,7 +41,7 @@ async def get_profile_picture(user_id: str) -> json:
             detail="This user does not have a profile picture.",
         )
 
-    image_route = f"{os.getcwd()}\images\{user_id}\profile.jpeg"
+    image_route = f"{os.getcwd()}/images/{user_id}/profile.jpeg"
     image_token = await image_tokenizer(image_route)
 
     return HTTPException(
@@ -108,7 +108,7 @@ async def get_background_picture(user_id: str) -> json:
             detail="This user does not have a background picture.",
         )
 
-    image_route = f"{os.getcwd()}\images\{user_id}\header.jpeg"
+    image_route = f"{os.getcwd()}/images/{user_id}/header.jpeg"
     image_token = await image_tokenizer(image_route)
 
     return HTTPException(
@@ -170,7 +170,7 @@ async def get_gallery_picture(user_id: str, picture_id: str) -> json:
             detail="This gallery image does not exist.",
         )
 
-    image_route = f"{os.getcwd()}\images\{user_id}\gallery\{picture_id}.jpeg"
+    image_route = f"{os.getcwd()}/images/{user_id}/gallery/{picture_id}.jpeg"
     image_token = await image_tokenizer(image_route)
 
     return HTTPException(
