@@ -100,7 +100,7 @@ async def evaluate_identification(token: str, user_id: int) -> json:
         )
 
     if auth_level == 9:
-        image_route = f"{os.getcwd()}\images\{user_id}\identification.jpeg"
+        image_route = f"{os.getcwd()}/images/{user_id}/identification.jpeg"
         image_token = await image_tokenizer(image_route)
 
         return HTTPException(
@@ -188,7 +188,7 @@ async def evaluate_certification(token: str, user_id: int) -> json:
         )
 
     if auth_level == 9:
-        image_route = f"{os.getcwd()}\images\{user_id}\certification.jpeg"
+        image_route = f"{os.getcwd()}/images/{user_id}/certification.jpeg"
         image_token = await image_tokenizer(image_route)
 
         return HTTPException(
