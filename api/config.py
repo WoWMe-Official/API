@@ -18,6 +18,7 @@ redis_password = os.environ.get("redis_password")
 redis_database = os.environ.get("redis_database")
 redis_port = os.environ.get("redis_port")
 server_ip = os.environ.get("server_ip")
+route_ip = os.environ.get("route_ip")
 
 
 # create application

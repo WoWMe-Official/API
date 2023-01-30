@@ -16,6 +16,7 @@ jobs:
           echo "${{ secrets.REDIS_DATABASE }}" >> .env
           echo "${{ secrets.REDIS_PORT }}" >> .env
           echo "${{ secrets.SERVER_IP }}" >> .env
+          echo "${{ secrets.ROUTE_IP }}" >> .env
 
   deploy:
     runs-on: self-hosted

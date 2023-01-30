@@ -22,5 +22,5 @@ router = APIRouter()
 async def get_image(image_id: str) -> json:
     """get image copy"""
     image_route = await redis_client.get(image_id)
-    image_route = redis_decode(bytes_encoded=image_route)
-    return FileResponse("C:/Users/thear/Documents/GitHub/API/images/8/profile.jpeg")
+    image_route = image_route.decode("utf-8")
+    return FileResponse(image_route)
