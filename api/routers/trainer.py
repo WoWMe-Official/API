@@ -1,6 +1,5 @@
 import json
 import os
-
 import cv2
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from sqlalchemy import select
@@ -10,20 +9,65 @@ from sqlalchemy.sql.expression import select, update
 from api.config import route_ip
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
-from api.database.models import Tokens, TrainerInformation
-from api.routers.functions.general import image_tokenizer
+from api.database.models import (
+    Tokens,
+    TrainerInformation,
+    Registration,
+    Specializations,
+)
+from api.routers.functions.general import image_tokenizer, get_token_user_id
 
 router = APIRouter()
 
 
-@router.get("/v1/trainers/{token}", tags=["trainer"])
-async def get_trainer_information(token: str) -> json:
-    """
-    Background image: string,
-    Title: string,
-    Number of  exercises: number,
-    Difficulty: string
-    """
+@router.get("/v1/trainers/id-search/{token}", tags=["trainer"])
+async def search_id_trainers(
+    token: str,
+    min_payment: int = None,
+    max_payment: int = None,
+    first_name: str = None,
+    last_name: str = None,
+    specialization: str = None,
+    max_results: int = None,
+) -> json:
+    """search for trainers, returns user ID of trainer"""
+
+    await get_token_user_id(token=token)
+    sql = select(TrainerInformation)
+    sql = sql.join(Registration, TrainerInformation.user_id == Registration.user_id)
+    sql = sql.join(
+        Specializations, TrainerInformation.user_id == Specializations.user_id
+    )
+
+    if min_payment:
+        sql = sql.where(TrainerInformation.rate >= min_payment)
+
+    if max_payment:
+        sql = sql.where(TrainerInformation.rate <= max_payment)
+
+    if first_name:
+        sql = sql.where(Registration.first_name == first_name)
+
+    if last_name:
+        sql = sql.where(Registration.last_name == last_name)
+
+    if specialization:
+        sql = sql.where(Specializations.specialization == specialization)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+
+    trainer_ids = []
+    for d in data:
+        trainer_ids.append(d["user_id"])
+
+    response = list(set(trainer_ids))
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail=response)
 
 
 @router.post("/v1/trainer/identification/upload/{token}", tags=["trainer"])

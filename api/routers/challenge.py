@@ -257,3 +257,54 @@ async def start_challenge(
     raise HTTPException(
         status_code=status.HTTP_201_CREATED, detail=f"{challenge_result_id}"
     )
+
+
+@router.get("/v1/challenge/search/{token}", tags=["challenge"])
+async def search_challenge(
+    token: str,
+    name: str = None,
+    description: str = None,
+    distance: int = None,
+    reward: str = None,
+    organization: str = None,
+) -> json:
+
+    await get_token_user_id(token=token)
+
+    sql = select(Challenge)
+
+    if name:
+        sql = sql.where(Challenge.name == name)
+
+    if description:
+        sql = sql.where(Challenge.description == name)
+
+    if distance:
+        sql = sql.where(Challenge.distance == distance)
+
+    if reward:
+        sql = sql.where(Challenge.reward == reward)
+
+    if organization:
+        organization_sql = sql.where(Organization.name == organization)
+
+        async with USERDATA_ENGINE.get_session() as session:
+            session: AsyncSession = session
+            async with session.begin():
+                organization_data = await session.execute(organization_sql)
+                organization_data = sqlalchemy_result(organization_data)
+                organization_data = organization_data.rows2dict()
+                organization_id = organization_data[0].get("id")
+        sql = sql.where(Challenge.organization == organization_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            challenge_data = await session.execute(sql)
+    challenge_data = sqlalchemy_result(challenge_data)
+    challenge_data = challenge_data.rows2dict()
+    challenge_ids = []
+    for challenge in challenge_data:
+        challenge_ids.append(challenge.get("id"))
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail=challenge_ids)

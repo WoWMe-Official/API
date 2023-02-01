@@ -21,6 +21,7 @@ from api.database.models import (
     Specializations,
     Tokens,
     TrainerInformation,
+    AvailableDays,
     UserInformation,
 )
 from api.routers.functions.general import (
@@ -58,16 +59,7 @@ async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> js
     #         detail="Your file exceeds 20MB. Please reduce your file upload.",
     #     )
 
-    sql = select(Tokens).where(Tokens.token == token)
-
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            data = await session.execute(sql)
-
-    data = sqlalchemy_result(data)
-    data = data.rows2dict()
-    uuid = data[0].get("user_id")
+    uuid = await get_token_user_id(token=token)
 
     try:
 
@@ -120,16 +112,7 @@ async def get_background_picture(user_id: str) -> json:
 @router.post("/v1/profile/background/{token}", tags=["profile"])
 async def upload_background_picture(token: str, file: UploadFile = File(...)) -> json:
 
-    sql = select(Tokens).where(Tokens.token == token)
-
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            data = await session.execute(sql)
-
-    data = sqlalchemy_result(data)
-    data = data.rows2dict()
-    uuid = data[0].get("user_id")
+    uuid = await get_token_user_id(token=token)
 
     try:
 
@@ -182,16 +165,7 @@ async def get_gallery_picture(user_id: str, picture_id: str) -> json:
 @router.post("/v1/profile/gallery/{token}", tags=["profile"])
 async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> json:
 
-    sql = select(Tokens).where(Tokens.token == token)
-
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            data = await session.execute(sql)
-
-    data = sqlalchemy_result(data)
-    data = data.rows2dict()
-    uuid = data[0].get("user_id")
+    uuid = await get_token_user_id(token=token)
 
     try:
 
@@ -243,8 +217,15 @@ async def get_profile_details(token: str, user_id: str) -> json:
     )
     fitness_goals_sql = select(FitnessGoals).where(FitnessGoals.user_id == user_id)
     ratings_sql = select(Ratings).where(Ratings.rated == user_id)
+    availability_sql = select(AvailableDays).where(AvailableDays.user_id == user_id)
     relationship_sql = select(Relationships).where(
         or_(Relationships.user_id_1 == user_id, Relationships.user_id_2 == user_id)
+    )
+    trainer_information_sql = select(TrainerInformation).where(
+        TrainerInformation.user_id == user_id
+    )
+    specializations_sql = select(Specializations).where(
+        Specializations.user_id == user_id
     )
 
     async with USERDATA_ENGINE.get_session() as session:
@@ -253,6 +234,7 @@ async def get_profile_details(token: str, user_id: str) -> json:
             registration_data = await session.execute(registration_sql)
             userinformation_data = await session.execute(userinformation_sql)
             fitness_goals_data = await session.execute(fitness_goals_sql)
+            availability_data = await session.execute(availability_sql)
             ratings_data = await session.execute(ratings_sql)
             relationship_data = await session.execute(relationship_sql)
 
@@ -269,25 +251,24 @@ async def get_profile_details(token: str, user_id: str) -> json:
             + registration_data[0].get("last_name")
         )
         about = registration_data[0].get("about_you")
+        gender = registration_data[0].get("gender")
+        socials = dict()
+        socials["facebook"] = registration_data[0].get("facebook")
+        socials["instagram"] = registration_data[0].get("instagram")
 
     if registration_data[0].get("account_type") == 1:
-        rate_sql = select(TrainerInformation).where(
-            TrainerInformation.user_id == user_id
-        )
-
-        specializations_sql = select(Specializations).where(
-            Specializations.user_id == user_id
-        )
-
         async with USERDATA_ENGINE.get_session() as session:
             session: AsyncSession = session
             async with session.begin():
-                rate_data = await session.execute(rate_sql)
+                trainer_information_data = await session.execute(
+                    trainer_information_sql
+                )
                 specialization_data = await session.execute(specializations_sql)
 
-        rate_data = sqlalchemy_result(rate_data)
-        rate_data = rate_data.rows2dict()
-        rate = rate_data[0].get("rate")
+        trainer_information_data = sqlalchemy_result(trainer_information_data)
+        trainer_information_data = trainer_information_data.rows2dict()
+        rate = trainer_information_data[0].get("rate")
+        payment_method = trainer_information_data[0].get("payment_method")
 
         specialization_data = sqlalchemy_result(specialization_data)
         specialization_data = specialization_data.rows2dict()
@@ -298,7 +279,21 @@ async def get_profile_details(token: str, user_id: str) -> json:
 
     else:
         rate = None
+        payment_method = None
         specializations = None
+
+    availability_data = sqlalchemy_result(availability_data)
+    availability_data = availability_data.rows2dict()
+    if len(availability_data) == 0:
+        availability = None
+    else:
+        availability = []
+        for available_day in availability_data:
+            d = dict()
+            d["day"] = available_day.get("day")
+            d["start_time"] = available_day.get("start_time")
+            d["end_time"] = available_day.get("end_time")
+            availability.append(d)
 
     userinformation_data = sqlalchemy_result(userinformation_data)
     userinformation_data = userinformation_data.rows2dict()
@@ -366,9 +361,13 @@ async def get_profile_details(token: str, user_id: str) -> json:
     public = dict()
     public["name"] = name
     public["about"] = about
+    public["gender"] = gender
+    public["socials"] = socials
+    public["availability"] = availability
     public["type"] = account_type
     public["goals"] = goals
     public["rate"] = rate
+    public["payment_method"] = payment_method
     public["partners"] = partners
     public["trainers"] = trainers
     public["rating"] = ratings
