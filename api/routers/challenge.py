@@ -259,7 +259,7 @@ async def start_challenge(
     )
 
 
-@router.get("/v1/challenge/search/{token}", tags=["challenge"])
+@router.get("/v1/challenge/search", tags=["challenge"])
 async def search_challenge(
     token: str,
     name: str = None,
