@@ -39,6 +39,7 @@ CREATE TABLE `events` (
  `uuid` int NOT NULL,
  `background_image` tinytext NOT NULL,
  `title` tinytext NOT NULL,
+ `description` text NOT NULL,
  `num_excercises` int NOT NULL,
  `difficulty` tinytext NOT NULL,
  PRIMARY KEY (`id`),

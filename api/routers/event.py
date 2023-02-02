@@ -48,3 +48,53 @@ async def get_event_information(token: str, event_hash: str) -> json:
     event_result = sqlalchemy_result(event_result)
     event_result = event_result.rows2dict()
     raise HTTPException(status_code=status.HTTP_200_OK, detail=event_result)
+
+
+@router.get("/v1/events/search", tags=["event"])
+async def search_events(
+    token: str,
+    event_hash: str = None,
+    title: str = None,
+    description: str = None,
+    num_excercises: int = None,
+    min_num_excercises: int = None,
+    max_num_excercises: int = None,
+    difficulty: str = None,
+) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(Event)
+
+    if event_hash:
+        sql = sql.where(Event.hash == event_hash)
+
+    if title:
+        sql = sql.where(Event.title == title)
+
+    if description:
+        sql = sql.where(Event.description == description)
+
+    if num_excercises and (~max_num_excercises or ~min_num_excercises):
+        sql = sql.where(Event.num_excercises == num_excercises)
+
+    if max_num_excercises and ~num_excercises:
+        sql = sql.where(Event.num_excercises <= max_num_excercises)
+
+    if min_num_excercises and ~num_excercises:
+        sql = sql.where(Event.num_excercises >= min_num_excercises)
+
+    if difficulty:
+        sql = sql.where(Event.difficulty == difficulty)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            event_result = await session.execute(sql)
+
+    event_result = sqlalchemy_result(event_result)
+    event_result = event_result.rows2dict()
+
+    event_hashes = []
+    for event in event_result:
+        event_hashes.append(event.get("hash"))
+    raise HTTPException(status_code=status.HTTP_200_OK, detail=event_hashes)
