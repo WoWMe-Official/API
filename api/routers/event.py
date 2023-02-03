@@ -50,7 +50,7 @@ async def get_event_information(token: str, event_hash: str) -> json:
     raise HTTPException(status_code=status.HTTP_200_OK, detail=event_result)
 
 
-@router.get("/v1/events/search", tags=["event"])
+@router.get("/v1/events/search/", tags=["event"])
 async def search_events(
     token: str,
     event_hash: str = None,
@@ -74,13 +74,13 @@ async def search_events(
     if description:
         sql = sql.where(Event.description == description)
 
-    if num_excercises and (~max_num_excercises or ~min_num_excercises):
+    if num_excercises and (not max_num_excercises or not min_num_excercises):
         sql = sql.where(Event.num_excercises == num_excercises)
 
-    if max_num_excercises and ~num_excercises:
+    if max_num_excercises and not num_excercises:
         sql = sql.where(Event.num_excercises <= max_num_excercises)
 
-    if min_num_excercises and ~num_excercises:
+    if min_num_excercises and not num_excercises:
         sql = sql.where(Event.num_excercises >= min_num_excercises)
 
     if difficulty:
