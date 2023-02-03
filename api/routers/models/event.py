@@ -9,5 +9,6 @@ class event(BaseModel):
     hash: Optional[str]
     background_image: str
     title: str
+    description: str
     num_excercises: int
     difficulty: str

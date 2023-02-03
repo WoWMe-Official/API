@@ -247,5 +247,6 @@ class Event(Base):
     hash = Column(TEXT, nullable=False)
     background_image = Column(TEXT, nullable=False)
     title = Column(TEXT, nullable=False)
+    description = Column(TEXT, nullable=False)
     num_excercises = Column(INTEGER, nullable=False)
     difficulty = Column(TEXT, nullable=False)
