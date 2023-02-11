@@ -58,11 +58,13 @@ async def sign_up(signup: account_models.signup) -> json:
     await account_functions.sign_up_account(signup=signup)
 
 
-@router.post("/v1/account/edit/{token}", tags=["account "])
+@router.put("/v1/account/edit/{token}", tags=["account "])
 async def edit_account_details(
-    token: str, account_information: account_models.signup
+    token: str, signup: account_models.signup
 ) -> json:
     uuid = await get_token_user_id(token=token)
+    
+    await account_functions.sanity_check(signup=signup)
 
 
 @router.post("/v1/account/login", tags=["account"])
