@@ -35,6 +35,12 @@ async def post_event_information(token: str, event: event_models.event) -> json:
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
 
 
+@router.put("/v1/events/edit/{token}", tags=["events"])
+async def edit_events_details(token: str) -> json:
+    ## add
+    return
+
+    
 @router.get("/v1/events/{token}", tags=["event"])
 async def get_event_information(token: str, event_hash: str) -> json:
     uuid = await get_token_user_id(token=token)

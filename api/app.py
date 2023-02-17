@@ -10,6 +10,7 @@ from api.routers import (
     trainer,
     workout,
     images,
+    inbox,
 )
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ app.include_router(event.router)
 app.include_router(dashboard.router)
 app.include_router(workout.router)
 app.include_router(images.router)
+app.include_router(inbox.router)
 
 
 @app.get("/")

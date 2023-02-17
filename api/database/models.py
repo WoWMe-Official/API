@@ -250,3 +250,33 @@ class Event(Base):
     description = Column(TEXT, nullable=False)
     num_excercises = Column(INTEGER, nullable=False)
     difficulty = Column(TEXT, nullable=False)
+
+
+class Inbox(Base):
+    __tablename__ = "inbox"
+
+    inbox_id = Column(INTEGER, primary_key=True, autoincrement=True)
+    inbox_token = Column(INTEGER)
+    timestamp = Column(TIMESTAMP)
+    communication_id = Column(INTEGER, nullable=False)
+    in_reply_to = Column(INTEGER, nullable=True)
+    sender = Column(INTEGER, nullable=False)
+    sendee = Column(INTEGER, nullable=False)
+    subject_line = Column(TEXT, nullable=False)
+    content = Column(TEXT, nullable=False)
+
+
+class Bcc(Base):
+    __tablename__ = "bcc"
+
+    bcc_id = Column(INTEGER, primary_key=True, autoincrement=True)
+    inbox_token = Column(TEXT, nullable=False)
+    uuid = Column(INTEGER, nullable=False)
+
+
+class Cc(Base):
+    __tablename__ = "cc"
+
+    cc_id = Column(INTEGER, primary_key=True, autoincrement=True)
+    inbox_token = Column(TEXT, nullable=False)
+    uuid = Column(INTEGER, nullable=False)
