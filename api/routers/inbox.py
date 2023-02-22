@@ -62,7 +62,6 @@ async def start_a_new_conversation(
 
     sql_inbox = insert(Inbox).values(
         inbox_token=inbox_token,
-        communication_id=0,
         sender=uuid,
         sendee=inbox_conversation_start.sendee,
         subject_line=inbox_conversation_start.subject_line,
@@ -82,7 +81,6 @@ async def search_inbox(
     token: str,
     inbox_id: int = None,
     inbox_token: str = None,
-    communication_id: int = None,
     in_reply_to: int = None,
     sender: int = None,
     sendee: int = None,
@@ -98,9 +96,6 @@ async def search_inbox(
 
     if inbox_token:
         sql = sql.where(Inbox.inbox_id == inbox_id)
-
-    if communication_id:
-        sql = sql.where(Inbox.communication_id == communication_id)
 
     if in_reply_to:
         sql = sql.where(Inbox.in_reply_to == in_reply_to)
@@ -140,6 +135,21 @@ async def search_inbox(
 async def reply_to_a_conversation(token: str, inbox_token: str, content: str) -> json:
     uuid = await get_token_user_id(token=token)
 
+    sql_inbox = insert(Inbox).values(
+        inbox_token=inbox_token,
+        sender=uuid,
+        sendee=None,
+        subject_line=None,
+        content=content,
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql_inbox)
+
+    return HTTPException(status.HTTP_201_CREATED, detail="Message Sent")
+
 
 @router.get("/v1/inbox/{token}", tags=["inbox"])
 async def get_inbox_information(token: str) -> json:
@@ -147,7 +157,7 @@ async def get_inbox_information(token: str) -> json:
 
     sql = select(Inbox)
 
-    sql.where(or_(Inbox.sendee == uuid, Inbox.sender == uuid))
+    sql = sql.where(or_(Inbox.sendee == uuid, Inbox.sender == uuid))
 
     async with USERDATA_ENGINE.get_session() as session:
         session: AsyncSession = session

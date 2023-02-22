@@ -8,8 +8,6 @@ class inbox(BaseModel):
     inbox_id: int
     inbox_token: str
     timestamp: Optional[datetime.datetime]
-    communication_id: int
-    in_reply_to: Optional[int]
     sender: int
     sendee: int
     subject_line: str

@@ -258,10 +258,8 @@ class Inbox(Base):
     inbox_id = Column(INTEGER, primary_key=True, autoincrement=True)
     inbox_token = Column(INTEGER)
     timestamp = Column(TIMESTAMP)
-    communication_id = Column(INTEGER, nullable=False)
-    in_reply_to = Column(INTEGER, nullable=True)
     sender = Column(INTEGER, nullable=False)
-    sendee = Column(INTEGER, nullable=False)
+    sendee = Column(INTEGER, nullable=True)
     subject_line = Column(TEXT, nullable=False)
     content = Column(TEXT, nullable=False)
 
