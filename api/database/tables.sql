@@ -195,3 +195,25 @@ CREATE TABLE `workout_plan` (
  `fitness_level` varchar(255) DEFAULT NULL,
  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+CREATE TABLE `inbox` (
+ `inbox_id` int NOT NULL AUTO_INCREMENT,
+ `inbox_token` tinytext NOT NULL,
+ `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `sender` int NOT NULL,
+ `sendee` int DEFAULT NULL,
+ `subject_line` tinytext NOT NULL,
+ `content` text NOT NULL,
+ PRIMARY KEY (`inbox_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `bcc` (
+ `bcc_id` int NOT NULL AUTO_INCREMENT,
+ `inbox_token` tinytext NOT NULL,
+ `uuid` int NOT NULL,
+ PRIMARY KEY (`bcc_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `cc` (
+ `cc_id` int NOT NULL AUTO_INCREMENT,
+ `inbox_token` tinytext NOT NULL,
+ `uuid` int NOT NULL,
+ PRIMARY KEY (`cc_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

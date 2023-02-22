@@ -103,3 +103,9 @@ async def get_workout_plan(token: str, user_id: str) -> json:
     response_dict["global_stats"] = stat_result
 
     raise HTTPException(status_code=status.HTTP_200_OK, detail=response_dict)
+
+
+@router.put("/v1/workout/edit/{token}", tags=["workout"])
+async def edit_workout_details(token: str) -> json:
+    ## add
+    return

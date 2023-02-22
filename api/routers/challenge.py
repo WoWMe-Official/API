@@ -243,11 +243,6 @@ async def start_challenge(
         session: AsyncSession = session
         async with session.begin():
             await session.execute(insert_challenge_sql)
-
-    async with USERDATA_ENGINE.get_session() as session:
-        session: AsyncSession = session
-        async with session.begin():
-            await session.execute(insert_challenge_sql)
             challenge_data = await session.execute(select_challenge_sql)
 
     challenge_result = sqlalchemy_result(challenge_data)
@@ -257,6 +252,12 @@ async def start_challenge(
     raise HTTPException(
         status_code=status.HTTP_201_CREATED, detail=f"{challenge_result_id}"
     )
+
+
+@router.put("/v1/challenge/edit/{token}", tags=["challenge"])
+async def edit_challenge_details(token: str) -> json:
+    ## add
+    return
 
 
 @router.get("/v1/challenge/search/", tags=["challenge"])
