@@ -35,12 +35,22 @@ async def post_event_information(token: str, event: event_models.event) -> json:
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
 
 
-@router.put("/v1/events/edit/{token}", tags=["events"])
-async def edit_events_details(token: str) -> json:
-    ## add
-    return
+@router.post("/v1/events/edit/{token}", tags=["event"])
+async def edit_event_details(
+    token: str, event: event_models.event, event_hash: str
+) -> json:
+    event.uuid = await get_token_user_id(token=token)
+    event.hash = event_hash
 
-    
+    insert_event = insert(Event).values(event.dict())
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(insert_event)
+
+    raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
+
+
 @router.get("/v1/events/{token}", tags=["event"])
 async def get_event_information(token: str, event_hash: str) -> json:
     uuid = await get_token_user_id(token=token)
