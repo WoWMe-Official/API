@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import insert, select, or_
+from sqlalchemy.sql.expression import insert, select, or_, update
 
 import api.routers.models.event as event_models
 from api.database.database import USERDATA_ENGINE
@@ -191,6 +191,23 @@ async def reply_to_a_conversation(token: str, inbox_token: str, content: str) ->
     """
     uuid = await get_token_user_id(token=token)
 
+    sql = select(Inbox)
+    sql = sql.join(InboxPerms, InboxPerms.inbox_token == Inbox.inbox_token)
+    sql = sql.where(InboxPerms.user_id == uuid, InboxPerms.can_access == True)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    result = sqlalchemy_result(data)
+    result = result.rows2dict()
+    if len(result) == 0:
+        return HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="You are unable to reply to this conversation.",
+        )
+
     sql_inbox = insert(Inbox).values(
         inbox_token=inbox_token,
         sender=uuid,
@@ -230,3 +247,87 @@ async def get_inbox_information(token: str) -> json:
     response = dict((cls, list(items)) for cls, items in groups)
 
     return HTTPException(status.HTTP_200_OK, detail=response)
+
+
+@router.post("/v1/inbox/leave/{token}", tags=["inbox"])
+async def leave_a_conversation(token: str, inbox_token: str) -> json:
+    """
+    This route allows you to send a leave a given conversation
+    """
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(Inbox)
+    sql = sql.join(InboxPerms, InboxPerms.inbox_token == Inbox.inbox_token)
+    sql = sql.where(InboxPerms.user_id == uuid, InboxPerms.can_access == True)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    result = sqlalchemy_result(data)
+    result = result.rows2dict()
+    if len(result) == 0:
+        return HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="You are unable to leave this conversation, or you have left this conversation already.",
+        )
+
+    sql_perm = (
+        update(InboxPerms)
+        .where(InboxPerms.inbox_token == inbox_token, InboxPerms.user_id == uuid)
+        .values(can_access=False)
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql_perm)
+
+    return HTTPException(
+        status.HTTP_202_ACCEPTED, detail="You have left this conversation."
+    )
+
+
+@router.post("/v1/inbox/edit/{token}", tags=["inbox"])
+async def edit_content_of_inbox(
+    token: str, inbox_id: int, new_subject_line: str = None, new_content: str = None
+) -> json:
+    """
+    This route will allow you to edit the content of a message
+    """
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(Inbox)
+    sql = sql.join(InboxPerms, InboxPerms.inbox_token == Inbox.inbox_token)
+    sql = sql.where(
+        InboxPerms.user_id == uuid,
+        InboxPerms.can_access == True,
+        Inbox.inbox_id == inbox_id,
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    result = sqlalchemy_result(data)
+    result = result.rows2dict()
+    if len(result) == 0:
+        return HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="You are unable to edit the content of this text",
+        )
+
+    sql_edit_inbox = (
+        update(Inbox)
+        .where(Inbox.inbox_id == inbox_id)
+        .values(subject_line=new_subject_line, content=new_content)
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql_edit_inbox)
+
+    return HTTPException(status.HTTP_202_ACCEPTED, detail="Message edited.")
