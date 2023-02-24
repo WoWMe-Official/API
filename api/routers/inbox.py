@@ -81,7 +81,6 @@ async def search_inbox(
     token: str,
     inbox_id: int = None,
     inbox_token: str = None,
-    in_reply_to: int = None,
     sender: int = None,
     sendee: int = None,
     subject_line: str = None,
@@ -95,10 +94,7 @@ async def search_inbox(
         sql = sql.where(Inbox.inbox_id == inbox_id)
 
     if inbox_token:
-        sql = sql.where(Inbox.inbox_id == inbox_id)
-
-    if in_reply_to:
-        sql = sql.where(Inbox.in_reply_to == in_reply_to)
+        sql = sql.where(Inbox.inbox_token == inbox_token)
 
     if sender:
         sql = sql.where(Inbox.sender == sender)
