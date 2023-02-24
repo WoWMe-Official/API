@@ -1,17 +1,15 @@
-import hashlib
 import json
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import insert, select, or_, update
+from sqlalchemy.sql.expression import insert, select, update
 
-import api.routers.models.event as event_models
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
-from api.database.models import Event, Inbox, Bcc, Cc, InboxPerms
+from api.database.models import Inbox, InboxPerms
 from api.routers.functions.general import get_token_user_id
-from api.routers.models.inbox import inbox, bcc, cc, inbox_conversation_start
+from api.routers.models.inbox import inbox_conversation_start
 from api.database.functions import generate_token
 import itertools
 import operator
@@ -322,7 +320,7 @@ async def edit_content_of_inbox(
     sql_edit_inbox = (
         update(Inbox)
         .where(Inbox.inbox_id == inbox_id)
-        .values(subject_line=new_subject_line, content=new_content)
+        .values(subject_line=new_subject_line, content=new_content, message_edited=1)
     )
 
     async with USERDATA_ENGINE.get_session() as session:

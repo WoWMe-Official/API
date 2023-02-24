@@ -200,10 +200,11 @@ CREATE TABLE `inbox` (
  `inbox_token` tinytext NOT NULL,
  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
  `sender` int NOT NULL,
- `subject_line` tinytext NOT NULL,
+ `subject_line` tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
  `content` text NOT NULL,
+ `message_edited` tinyint(1) NOT NULL DEFAULT '0',
  PRIMARY KEY (`inbox_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `bcc` (
  `bcc_id` int NOT NULL AUTO_INCREMENT,
  `inbox_token` tinytext NOT NULL,
