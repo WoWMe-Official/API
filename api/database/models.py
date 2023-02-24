@@ -261,6 +261,7 @@ class Inbox(Base):
     sender = Column(INTEGER, nullable=False)
     subject_line = Column(TEXT, nullable=False)
     content = Column(TEXT, nullable=False)
+    message_edited = Column(INTEGER, nullable=False)
 
 
 class Bcc(Base):
