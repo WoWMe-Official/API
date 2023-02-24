@@ -259,7 +259,6 @@ class Inbox(Base):
     inbox_token = Column(INTEGER)
     timestamp = Column(TIMESTAMP)
     sender = Column(INTEGER, nullable=False)
-    sendee = Column(INTEGER, nullable=True)
     subject_line = Column(TEXT, nullable=False)
     content = Column(TEXT, nullable=False)
 
@@ -278,3 +277,11 @@ class Cc(Base):
     cc_id = Column(INTEGER, primary_key=True, autoincrement=True)
     inbox_token = Column(TEXT, nullable=False)
     uuid = Column(INTEGER, nullable=False)
+
+
+class InboxPerms(Base):
+    __tablename__ = "inbox_perms"
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    inbox_token = Column(TEXT, nullable=False)
+    user_id = Column(INTEGER, nullable=False)
+    can_access = Column(INTEGER)

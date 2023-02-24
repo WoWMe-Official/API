@@ -200,7 +200,6 @@ CREATE TABLE `inbox` (
  `inbox_token` tinytext NOT NULL,
  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
  `sender` int NOT NULL,
- `sendee` int DEFAULT NULL,
  `subject_line` tinytext NOT NULL,
  `content` text NOT NULL,
  PRIMARY KEY (`inbox_id`)
@@ -216,4 +215,11 @@ CREATE TABLE `cc` (
  `inbox_token` tinytext NOT NULL,
  `uuid` int NOT NULL,
  PRIMARY KEY (`cc_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `inbox_perms` (
+ `id` bigint NOT NULL AUTO_INCREMENT,
+ `inbox_token` tinytext NOT NULL,
+ `user_id` int NOT NULL,
+ `can_access` tinyint(1) NOT NULL,
+ PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
