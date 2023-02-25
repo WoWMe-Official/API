@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import insert, select
+from sqlalchemy.sql.expression import insert, select, delete, update
 
 import api.routers.models.event as event_models
 from api.database.database import USERDATA_ENGINE
@@ -35,7 +35,7 @@ async def post_event_information(token: str, event: event_models.event) -> json:
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
 
 
-@router.post("/v1/events/edit/{token}", tags=["event"])
+@router.put("/v1/events/edit/{token}", tags=["event"])
 async def edit_event_details(
     token: str, event: event_models.event, event_hash: str
 ) -> json:
@@ -49,6 +49,20 @@ async def edit_event_details(
             await session.execute(insert_event)
 
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
+
+
+@router.delete("/v1/events/delete/{token}", tags=["event"])
+async def delete_event(token: str, event_hash: str) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = delete(Event).where(Event.uuid == uuid, Event.hash == event_hash)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql)
+
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail="Event deleted.")
 
 
 @router.get("/v1/events/{token}", tags=["event"])

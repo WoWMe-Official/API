@@ -3,7 +3,7 @@ import json
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import insert, select, update
+from sqlalchemy.sql.expression import insert, select, update, delete
 
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
@@ -287,7 +287,21 @@ async def leave_a_conversation(token: str, inbox_token: str) -> json:
     )
 
 
-@router.post("/v1/inbox/edit/{token}", tags=["inbox"])
+@router.delete("/v1/inbox/delete/{token}", tags=["inbox"])
+async def delete_inbox_message(token: str, inbox_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = delete(Inbox).where(Inbox.sender == uuid, Inbox.inbox_id == inbox_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql)
+
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail="Message deleted.")
+
+
+@router.put("/v1/inbox/edit/{token}", tags=["inbox"])
 async def edit_content_of_inbox(
     token: str, inbox_id: int, new_subject_line: str = None, new_content: str = None
 ) -> json:

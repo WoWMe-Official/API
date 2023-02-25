@@ -24,6 +24,7 @@ class leaderboard(BaseModel):
 
 class challenge_details(BaseModel):
     name: str
+    user_id: Optional[str]
     background: str
     profile_route: str
     description: str

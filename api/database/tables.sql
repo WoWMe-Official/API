@@ -12,6 +12,7 @@ CREATE TABLE `available_days` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
 CREATE TABLE `challenges` (
  `ID` int NOT NULL AUTO_INCREMENT,
+ `user_id` int NOT NULL,
  `name` varchar(255) NOT NULL,
  `background` varchar(255) NOT NULL,
  `profile_picture` varchar(255) NOT NULL,
@@ -23,7 +24,7 @@ CREATE TABLE `challenges` (
  `organization` int NOT NULL,
  `leaderboard` int NOT NULL,
  PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 CREATE TABLE `challenge_details_day` (
  `ID` int NOT NULL AUTO_INCREMENT,
  `day_hash` tinytext NOT NULL,
