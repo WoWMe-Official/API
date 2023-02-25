@@ -9,7 +9,16 @@ import api.routers.functions.account as account_functions
 import api.routers.models.account as account_models
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import hashbrown, sqlalchemy_result
-from api.database.models import Registration, Tokens, Blocks
+from api.database.models import (
+    Registration,
+    Tokens,
+    Blocks,
+    TrainerInformation,
+    UserInformation,
+    Specializations,
+    FitnessGoals,
+    AvailableDays,
+)
 from api.routers.functions.general import get_token_user_id
 
 router = APIRouter()
@@ -101,10 +110,185 @@ async def change_password(email: str, old_password: str, new_password: str) -> j
 
 
 @router.put("/v1/account/edit/{token}", tags=["account "])
-async def edit_account_details(token: str, signup: account_models.signup) -> json:
+async def edit_account_details(
+    token: str, signup: account_models.edit_account_details
+) -> json:
     uuid = await get_token_user_id(token=token)
 
-    await account_functions.sanity_check(signup=signup)
+    if signup.edit_personal_details:
+        sql_registration = update(Registration).where(Registration.user_id == uuid)
+        personal_details_dict = dict()
+
+        if signup.edit_personal_details.first_name:
+            personal_details_dict[
+                "first_name"
+            ] = signup.edit_personal_details.first_name
+
+        if signup.edit_personal_details.last_name:
+            personal_details_dict["last_name"] = signup.edit_personal_details.last_name
+
+        if signup.edit_personal_details.phone:
+            personal_details_dict["phone"] = signup.edit_personal_details.phone
+
+        if signup.edit_personal_details.birthdate:
+            personal_details_dict["birthdate"] = signup.edit_personal_details.birthdate
+
+        if signup.edit_personal_details.about_you:
+            personal_details_dict["about_you"] = signup.edit_personal_details.about_you
+
+        if signup.edit_personal_details.gender:
+            personal_details_dict["gender"] = signup.edit_personal_details.gender
+
+        if signup.edit_personal_details.social:
+            personal_details_dict[
+                "facebook"
+            ] = signup.edit_personal_details.social.facebook
+            personal_details_dict[
+                "instagram"
+            ] = signup.edit_personal_details.social.instagram
+
+        sql_registration = sql_registration.values(personal_details_dict)
+
+        async with USERDATA_ENGINE.get_session() as session:
+            session: AsyncSession = session
+            async with session.begin():
+                await session.execute(sql_registration)
+
+    if signup.edit_role:
+        sql_account_type = update(Registration).where(Registration.user_id == uuid)
+        account_type_value = [1 if signup.edit_role.isTrainer else 0][0]
+        sql_account_type = sql_account_type.values(account_type=account_type_value)
+
+        async with USERDATA_ENGINE.get_session() as session:
+            session: AsyncSession = session
+            async with session.begin():
+                await session.execute(sql_account_type)
+
+    if signup.edit_trainer_information:
+
+        trainer_information_sql = update(TrainerInformation).where(
+            TrainerInformation.user_id == uuid
+        )
+
+        trainer_information_dict = dict()
+        if signup.edit_trainer_information.payment_method:
+            trainer_information_dict[
+                "payment_method"
+            ] = signup.edit_trainer_information.payment_method
+
+        if signup.edit_trainer_information.rate:
+            trainer_information_dict["rate"] = signup.edit_trainer_information.rate
+
+        if signup.edit_trainer_information.social_security_number:
+            trainer_information_dict[
+                "social_security_number"
+            ] = signup.edit_trainer_information.social_security_number
+        trainer_information_sql = trainer_information_sql.values(
+            trainer_information_dict
+        )
+
+        if trainer_information_dict:
+            async with USERDATA_ENGINE.get_session() as session:
+                session: AsyncSession = session
+                async with session.begin():
+                    await session.execute(trainer_information_sql)
+
+        if signup.edit_trainer_information.specializations:
+            specialization_list = []
+            for specialization in signup.edit_trainer_information.specializations:
+                pack = dict()
+                pack["user_id"] = uuid
+                pack["specialization"] = specialization
+                specialization_list.append(pack)
+
+            sql_delete_specializations = delete(Specializations).where(
+                Specializations.user_id == uuid
+            )
+            sql_insert_specializations = insert(Specializations).values(
+                specialization_list
+            )
+
+            async with USERDATA_ENGINE.get_session() as session:
+                session: AsyncSession = session
+                async with session.begin():
+                    await session.execute(sql_delete_specializations)
+                    await session.execute(sql_insert_specializations)
+
+    if signup.edit_user_information:
+        sql_user_information = update(UserInformation).where(
+            UserInformation.user_id == uuid
+        )
+
+        user_information_dict = dict()
+        if signup.edit_user_information.height_ft_in:
+            user_information_dict[
+                "height_ft_in"
+            ] = signup.edit_user_information.height_ft_in
+        if signup.edit_user_information.weight_lb:
+            user_information_dict["weight_lb"] = signup.edit_user_information.weight_lb
+        if signup.edit_user_information.height_cm:
+            user_information_dict["height_cm"] = signup.edit_user_information.height_cm
+        if signup.edit_user_information.weight_kg:
+            user_information_dict["weight_kg"] = signup.edit_user_information.weight_kg
+        if signup.edit_user_information.body_fat_percentage:
+            user_information_dict[
+                "body_fat_percentage"
+            ] = signup.edit_user_information.body_fat_percentage
+        if signup.edit_user_information.fitness_level:
+            user_information_dict[
+                "fitness_level"
+            ] = signup.edit_user_information.fitness_level
+
+        sql_user_information = sql_user_information.values(user_information_dict)
+
+        if user_information_dict:
+            async with USERDATA_ENGINE.get_session() as session:
+                session: AsyncSession = session
+                async with session.begin():
+                    await session.execute(sql_user_information)
+
+        if signup.edit_user_information.available_days:
+
+            availability = []
+            for day in signup.edit_user_information.available_days:
+                pack = dict()
+                pack["user_id"] = uuid
+                pack["day"] = day.day
+                pack["start_time"] = day.start_time
+                pack["end_time"] = day.end_time
+                availability.append(pack)
+
+            sql_insert_available_days = insert(AvailableDays).values(availability)
+            sql_delete_available_days = delete(AvailableDays).where(
+                AvailableDays.user_id == uuid
+            )
+
+            async with USERDATA_ENGINE.get_session() as session:
+                session: AsyncSession = session
+                async with session.begin():
+                    await session.execute(sql_delete_available_days)
+                    await session.execute(sql_insert_available_days)
+
+        if signup.edit_user_information.fitness_goals:
+            goals = []
+            for fitness_goal in signup.edit_user_information.fitness_goals:
+                pair = dict()
+                pair["user_id"] = uuid
+                pair["goal"] = fitness_goal
+                goals.append(pair)
+
+            sql_delete_goals = delete(FitnessGoals).where(FitnessGoals.user_id == uuid)
+            sql_insert_goals = insert(FitnessGoals).values(goals)
+
+            async with USERDATA_ENGINE.get_session() as session:
+                session: AsyncSession = session
+                async with session.begin():
+                    await session.execute(sql_delete_goals)
+                    await session.execute(sql_insert_goals)
+
+    raise HTTPException(
+        status_code=status.HTTP_202_ACCEPTED, detail="Updated account information."
+    )
 
 
 @router.post("/v1/account/login", tags=["account"])
