@@ -247,7 +247,7 @@ async def get_inbox_information(token: str) -> json:
     return HTTPException(status.HTTP_200_OK, detail=response)
 
 
-@router.post("/v1/inbox/leave/{token}", tags=["inbox"])
+@router.put("/v1/inbox/leave/{token}", tags=["inbox"])
 async def leave_a_conversation(token: str, inbox_token: str) -> json:
     """
     This route allows you to send a leave a given conversation
