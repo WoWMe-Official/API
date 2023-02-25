@@ -98,6 +98,7 @@ class Leaderboard(Base):
 class Challenge(Base):
     __tablename__ = "challenges"
     id = Column(INTEGER, primary_key=True, autoincrement=True)
+    user_id = Column(INTEGER, nullable=False)
     name = Column(TEXT, nullable=False)
     background = Column(TEXT, nullable=False)
     profile_picture = Column(TEXT, nullable=False)

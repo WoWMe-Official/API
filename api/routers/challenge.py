@@ -16,7 +16,7 @@ import json
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import select, update, insert
+from sqlalchemy.sql.expression import select, update, insert, delete
 
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
@@ -99,6 +99,7 @@ async def start_challenge(
 ) -> json:
 
     uuid = await get_token_user_id(token=token)
+    challenge_details.user_id = uuid
 
     insert_organization_sql = insert(Organization).values(
         name=challenge_details.organization.name,
@@ -197,6 +198,7 @@ async def start_challenge(
 
     insert_challenge_sql = insert(Challenge).values(
         name=challenge_details.name,
+        user_id=challenge_details.user_id,
         background=challenge_details.background,
         profile_picture=challenge_details.profile_route,
         description=challenge_details.description,
@@ -208,6 +210,9 @@ async def start_challenge(
         leaderboard=leaderboard_entry_id,
     )
 
+    select_challenge_sql = select(Challenge).where(
+        Challenge.user_id == challenge_details.user_id
+    )
     select_challenge_sql = select(Challenge).where(
         Challenge.name == challenge_details.name
     )
@@ -255,15 +260,36 @@ async def start_challenge(
 
 
 @router.put("/v1/challenge/edit/{token}", tags=["challenge"])
-async def edit_challenge_details(token: str) -> json:
+async def edit_challenge_details(
+    token: str, challenge_details: challenge_models.challenge_details
+) -> json:
     ## add
     return
+
+
+@router.delete("/v1/challenge/delete/{token}", tags=["challenge"])
+async def delete_challenge(token: str, challenge_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = delete(Challenge).where(
+        Challenge.user_id == uuid, Challenge.id == challenge_id
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql)
+
+    raise HTTPException(
+        status_code=status.HTTP_202_ACCEPTED, detail="Challenge deleted."
+    )
 
 
 @router.get("/v1/challenge/search/", tags=["challenge"])
 async def search_challenge(
     token: str,
     name: str = None,
+    user_id: str = None,
     description: str = None,
     distance: int = None,
     reward: str = None,
@@ -273,6 +299,9 @@ async def search_challenge(
     await get_token_user_id(token=token)
 
     sql = select(Challenge)
+
+    if user_id:
+        sql = sql.where(Challenge.user_id == user_id)
 
     if name:
         sql = sql.where(Challenge.name == name)

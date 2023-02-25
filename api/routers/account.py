@@ -67,7 +67,7 @@ async def sign_up(signup: account_models.signup) -> json:
     await account_functions.sign_up_account(signup=signup)
 
 
-@router.put("/v1/account/change-password", tags=["account "])
+@router.put("/v1/account/change-password", tags=["account"])
 async def change_password(email: str, old_password: str, new_password: str) -> json:
     email = await account_functions.sanitize_email(email=email)
     old_hashed_password = await hashbrown(password=old_password)
@@ -109,7 +109,7 @@ async def change_password(email: str, old_password: str, new_password: str) -> j
     )
 
 
-@router.put("/v1/account/edit/{token}", tags=["account "])
+@router.put("/v1/account/edit/{token}", tags=["account"])
 async def edit_account_details(
     token: str, signup: account_models.edit_account_details
 ) -> json:
