@@ -45,5 +45,3 @@ class edit_challenge_details(BaseModel):
     edit_end_date: day
     edit_distance: int
     edit_reward: str
-    edit_organization: Optional[organization]
-    edit_leaderboard: Optional[leaderboard]
