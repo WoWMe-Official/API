@@ -34,3 +34,14 @@ class challenge_details(BaseModel):
     reward: str
     organization: organization
     leaderboard: leaderboard
+
+
+class edit_challenge_details(BaseModel):
+    edit_name: str
+    edit_background: str
+    edit_profile_route: str
+    edit_description: str
+    edit_start_date: day
+    edit_end_date: day
+    edit_distance: int
+    edit_reward: str
