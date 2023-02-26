@@ -12,3 +12,11 @@ class event(BaseModel):
     description: str
     num_excercises: int
     difficulty: str
+
+
+class edit_event(BaseModel):
+    edit_background_image: str
+    edit_title: str
+    edit_description: str
+    edit_num_excercises: int
+    edit_difficulty: str

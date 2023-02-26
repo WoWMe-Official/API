@@ -37,18 +37,32 @@ async def post_event_information(token: str, event: event_models.event) -> json:
 
 @router.put("/v1/events/edit/{token}", tags=["event"])
 async def edit_event_details(
-    token: str, event: event_models.event, event_hash: str
+    token: str, event: event_models.edit_event, event_hash: str
 ) -> json:
-    event.uuid = await get_token_user_id(token=token)
-    event.hash = event_hash
+    uuid = await get_token_user_id(token=token)
 
-    insert_event = insert(Event).values(event.dict())
+    sql = update(Event).where(Event.uuid == uuid, Event.event_hash == event_hash)
+
+    event_dict = dict()
+    if event.edit_title:
+        event_dict["title"] = event.edit_title
+    if event.edit_num_excercises:
+        event_dict["num_excercises"] = event.edit_num_excercises
+    if event.edit_background_image:
+        event_dict["background_image"] = event.edit_background_image
+    if event.edit_description:
+        event_dict["description"] = event.edit_description
+
+    sql = sql.values(event_dict)
+
     async with USERDATA_ENGINE.get_session() as session:
         session: AsyncSession = session
         async with session.begin():
-            await session.execute(insert_event)
+            await session.execute(sql)
 
-    raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED, detail=f"Event Information Updated"
+    )
 
 
 @router.delete("/v1/events/delete/{token}", tags=["event"])

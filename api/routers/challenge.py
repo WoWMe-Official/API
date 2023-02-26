@@ -261,10 +261,37 @@ async def start_challenge(
 
 @router.put("/v1/challenge/edit/{token}", tags=["challenge"])
 async def edit_challenge_details(
-    token: str, challenge_details: challenge_models.challenge_details
+    token: str,
+    challenge_id: int,
+    challenge_details: challenge_models.edit_challenge_details,
 ) -> json:
-    ## add
-    return
+    uuid = await get_token_user_id(token=token)
+
+    sql = sql.update(Challenge).where(
+        Challenge.id == challenge_id, Challenge.user_id == uuid
+    )
+    challenge_details_dict = dict()
+    if challenge_details.edit_name:
+        challenge_details_dict["name"] = challenge_details.edit_name
+    if challenge_details.edit_end_date:
+        challenge_details_dict["end_date"] = challenge_details.edit_end_date
+    if challenge_details.edit_background:
+        challenge_details_dict["background"] = challenge_details.edit_background
+    if challenge_details.edit_start_date:
+        challenge_details_dict["start_date"] = challenge_details.edit_start_date
+    if challenge_details.edit_reward:
+        challenge_details_dict["reward"] = challenge_details.edit_reward
+    if challenge_details.edit_profile_route:
+        challenge_details_dict["profile_route"] = challenge_details.edit_profile_route
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql)
+
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED, detail=f"Challenge Information Updated"
+    )
 
 
 @router.delete("/v1/challenge/delete/{token}", tags=["challenge"])
