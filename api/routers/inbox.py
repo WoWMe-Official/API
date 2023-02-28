@@ -301,6 +301,58 @@ async def delete_inbox_message(token: str, inbox_id: int) -> json:
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail="Message deleted.")
 
 
+@router.get("/v1/inbox/get-conversation/{token}", tags=["inbox"])
+async def get_active_conversation_with_user(token: str, user_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(InboxPerms).where(
+        InboxPerms.user_id == uuid, InboxPerms.can_access == 1
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+
+    inbox_tokens = []
+    for d in data:
+        inbox_tokens.append(d.get("inbox_token"))
+
+    if len(inbox_tokens) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail="This user does not have an active, accessible, conversation.",
+        )
+
+    sql_gather = select(InboxPerms).where(InboxPerms.inbox_token.in_(inbox_tokens))
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql_gather)
+
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+
+    conversations = []
+    for d in data:
+        if d.get("can_access") == 0:
+            continue
+        if d.get("user_id") == user_id:
+            conversations.append(d)
+
+    if len(conversations) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail="This user does not have an active, accessible, conversation.",
+        )
+
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=conversations)
+
+
 @router.put("/v1/inbox/edit/{token}", tags=["inbox"])
 async def edit_content_of_inbox(
     token: str, inbox_id: int, new_subject_line: str = None, new_content: str = None
