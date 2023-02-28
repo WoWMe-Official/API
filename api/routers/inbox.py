@@ -321,6 +321,12 @@ async def get_active_conversation_with_user(token: str, user_id: int) -> json:
     for d in data:
         inbox_tokens.append(d.get("inbox_token"))
 
+    if len(inbox_tokens) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail="This user does not have an active, accessible, conversation.",
+        )
+
     sql_gather = select(InboxPerms).where(InboxPerms.inbox_token.in_(inbox_tokens))
 
     async with USERDATA_ENGINE.get_session() as session:
@@ -337,6 +343,12 @@ async def get_active_conversation_with_user(token: str, user_id: int) -> json:
             continue
         if d.get("user_id") == user_id:
             conversations.append(d)
+
+    if len(conversations) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail="This user does not have an active, accessible, conversation.",
+        )
 
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=conversations)
 
