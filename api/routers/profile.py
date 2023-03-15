@@ -394,8 +394,8 @@ async def get_profile_details(token: str, user_id: str) -> json:
     return response
 
 
-@router.get("/v1/profile/search/", tags=["profile"])
-async def search_profile(
+@router.get("/v1/profile/id-search/", tags=["profile"])
+async def search_id_profile(
     token: str,
     account_type: int = None,
     first_name: str = None,
@@ -435,3 +435,38 @@ async def search_profile(
     user_ids = list(set(user_ids))
 
     raise HTTPException(status_code=status.HTTP_200_OK, detail=user_ids)
+
+
+@router.get("/v1/profile/search/", tags=["profile"])
+async def search_profile(
+    token: str,
+    account_type: int = None,
+    first_name: str = None,
+    last_name: str = None,
+    gender: str = None,
+) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(Registration)
+
+    if (account_type == 1) or (account_type == 0):
+        sql = sql.where(Registration.account_type == account_type)
+
+    if first_name:
+        sql = sql.where(Registration.first_name == first_name)
+
+    if last_name:
+        sql = sql.where(Registration.last_name == last_name)
+
+    if gender:
+        sql = sql.where(Registration.gender == gender)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(sql)
+
+    result = sqlalchemy_result(result)
+    result = result.rows2dict()
+
+    raise HTTPException(status_code=status.HTTP_200_OK, detail=result)

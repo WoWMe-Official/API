@@ -109,3 +109,59 @@ async def get_workout_plan(token: str, user_id: str) -> json:
 async def edit_workout_details(token: str) -> json:
     ## add
     return
+
+
+# class stats(BaseModel):
+#     title: str
+#     hash: Optional[str]
+#     uuid: Optional[int]
+#     stat: int
+
+
+# class workout(BaseModel):
+#     hash: Optional[str]
+#     uuid: Optional[int]
+#     workout: str
+#     reps: int
+#     weight: float
+
+
+# class workout_plan(BaseModel):
+#     name: str
+#     uuid: Optional[int]
+#     rating: float
+#     workouts_completed: int
+#     fitness_level: str
+#     global_stats: List[stats]
+#     workout_plan: List[workout]
+
+
+@router.get("/v1/workout/partners/id-search/{token}", tags=["workout"])
+async def search_workouts_for_id_users(
+    token: str,
+    workout: str = None,
+    reps: str = None,
+    weight: str = None,
+) -> json:
+    """Search for workouts"""
+    await get_token_user_id(token=token)
+
+    sql = select(Workout)
+
+    if workout:
+        sql = sql.where(Workout.workout == workout)
+
+    if reps:
+        sql = sql.where(Workout.reps == reps)
+
+    if weight:
+        sql = sql.where(Workout.weight == weight)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail=data)
