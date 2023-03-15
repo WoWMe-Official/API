@@ -13,8 +13,11 @@ from api.routers.functions.general import get_token_user_id
 router = APIRouter()
 
 
-@router.get("/v1/dashboard/{token}", tags=["dashboard"])
+@router.get("/{token}", tags=["dashboard"])
 async def get_dashboard_information(token: str) -> json:
+    """
+    This code defines a route for getting dashboard information for a trainer. The function takes a token as input, which is used to retrieve the trainer ID. Then, two SQL queries are executed to retrieve the trainer's stats and client history. The results are processed and used to create a response JSON object with information on the trainer's earnings, taxes, hours worked, sessions worked, categories assigned, client count, client profiles, steps, and distance. The response is then returned.
+    """
 
     uuid = await get_token_user_id(token=token)
 

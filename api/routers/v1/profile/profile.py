@@ -1,37 +1,31 @@
 import glob
 import json
 import os
-import time
-import asyncio
-import aiohttp
-
 import random
+import time
+
 import cv2
-from asyncio.tasks import create_task
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 from sqlalchemy.sql.expression import select
 
-
-from api.config import redis_client
-from api.routers.functions.general import batch_function
 from api.config import route_ip
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
 from api.database.models import (
+    AvailableDays,
     FitnessGoals,
     Ratings,
     Registration,
     Relationships,
     Specializations,
-    Tokens,
     TrainerInformation,
-    AvailableDays,
     UserInformation,
 )
 from api.routers.functions.general import (
+    batch_function,
     check_user_block,
     get_token_user_id,
     image_tokenizer,
@@ -40,7 +34,7 @@ from api.routers.functions.general import (
 router = APIRouter()
 
 
-@router.get("/v1/profile/avatar/{user_id}", tags=["profile"])
+@router.get("/avatar/{user_id}", tags=["profile"])
 async def get_profile_picture(user_id: str) -> json:
     "Get the profile picture of a user by their ID."
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/profile.jpeg"):
@@ -58,7 +52,7 @@ async def get_profile_picture(user_id: str) -> json:
     )
 
 
-@router.post("/v1/profile/avatar/{token}", tags=["profile"])
+@router.post("/avatar/{token}", tags=["profile"])
 async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> json:
     # if len(await file.read()) >= 20_000_000:
     #     raise HTTPException(
@@ -98,7 +92,7 @@ async def upload_profile_picture(token: str, file: UploadFile = File(...)) -> js
     )
 
 
-@router.get("/v1/profile/background/{user_id}", tags=["profile"])
+@router.get("/background/{user_id}", tags=["profile"])
 async def get_background_picture(user_id: str) -> json:
     "Get the background picture of a user by their ID."
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/header.jpeg"):
@@ -116,7 +110,7 @@ async def get_background_picture(user_id: str) -> json:
     )
 
 
-@router.post("/v1/profile/background/{token}", tags=["profile"])
+@router.post("/background/{token}", tags=["profile"])
 async def upload_background_picture(token: str, file: UploadFile = File(...)) -> json:
 
     uuid = await get_token_user_id(token=token)
@@ -151,7 +145,7 @@ async def upload_background_picture(token: str, file: UploadFile = File(...)) ->
     )
 
 
-@router.get("/v1/profile/gallery/{user_id}/{picture_id}", tags=["profile"])
+@router.get("/gallery/{user_id}/{picture_id}", tags=["profile"])
 async def get_gallery_picture(user_id: str, picture_id: str) -> json:
     "Get the gallery picture of a user by their ID and picture ID"
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/gallery/{picture_id}.jpeg"):
@@ -169,7 +163,7 @@ async def get_gallery_picture(user_id: str, picture_id: str) -> json:
     )
 
 
-@router.post("/v1/profile/gallery/{token}", tags=["profile"])
+@router.post("/gallery/{token}", tags=["profile"])
 async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> json:
 
     uuid = await get_token_user_id(token=token)
@@ -208,7 +202,7 @@ async def upload_gallery_picture(token: str, file: UploadFile = File(...)) -> js
     )
 
 
-@router.get("/v1/profile/details/{token}/{user_id}", tags=["profile"])
+@router.get("/details/{token}/{user_id}", tags=["profile"])
 async def get_profile_details(token: str, user_id: str) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -402,7 +396,7 @@ async def get_profile_details(token: str, user_id: str) -> json:
     return response
 
 
-@router.get("/v1/profile/search/", tags=["profile"])
+@router.get("/search/", tags=["profile"])
 async def search_profile(
     token: str,
     account_type: int = None,
@@ -445,7 +439,7 @@ async def search_profile(
     return HTTPException(status_code=status.HTTP_200_OK, detail=user_ids)
 
 
-@router.get("/v1/profile/full-search/", tags=["profile"])
+@router.get("/full-search/", tags=["profile"])
 async def search_full_profile(
     token: str,
     account_type: int = None,

@@ -19,7 +19,7 @@ def hash(string):
     return hashlib.sha256(string.encode()).hexdigest()
 
 
-@router.post("/v1/workout/{token}", tags=["workout"])
+@router.post("/{token}", tags=["workout"])
 async def post_workout_plan(
     token: str, workout_plan: workout_models.workout_plan
 ) -> json:
@@ -74,7 +74,7 @@ async def post_workout_plan(
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{uuid}")
 
 
-@router.get("/v1/workout/{token}/{user_id}", tags=["workout"])
+@router.get("/{token}/{user_id}", tags=["workout"])
 async def get_workout_plan(token: str, user_id: str) -> json:
 
     uuid_token = await get_token_user_id(token=token)
@@ -105,7 +105,7 @@ async def get_workout_plan(token: str, user_id: str) -> json:
     raise HTTPException(status_code=status.HTTP_200_OK, detail=response_dict)
 
 
-@router.put("/v1/workout/edit/{token}", tags=["workout"])
+@router.put("/edit/{token}", tags=["workout"])
 async def edit_workout_details(token: str) -> json:
     ## add
     return
@@ -136,7 +136,7 @@ async def edit_workout_details(token: str) -> json:
 #     workout_plan: List[workout]
 
 
-@router.get("/v1/workout/partners/id-search/{token}", tags=["workout"])
+@router.get("/partners/id-search/{token}", tags=["workout"])
 async def search_workouts_for_id_users(
     token: str,
     workout: str = None,

@@ -19,7 +19,7 @@ def hash(string):
     return hashlib.sha256(string.encode()).hexdigest()
 
 
-@router.post("/v1/events/{token}", tags=["event"])
+@router.post("/{token}", tags=["event"])
 async def post_event_information(token: str, event: event_models.event) -> json:
     event.uuid = await get_token_user_id(token=token)
     event.hash = hash(
@@ -35,7 +35,7 @@ async def post_event_information(token: str, event: event_models.event) -> json:
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail=f"{event.hash}")
 
 
-@router.put("/v1/events/edit/{token}", tags=["event"])
+@router.put("/edit/{token}", tags=["event"])
 async def edit_event_details(
     token: str, event: event_models.edit_event, event_hash: str
 ) -> json:
@@ -65,7 +65,7 @@ async def edit_event_details(
     )
 
 
-@router.delete("/v1/events/delete/{token}", tags=["event"])
+@router.delete("/delete/{token}", tags=["event"])
 async def delete_event(token: str, event_hash: str) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -79,7 +79,7 @@ async def delete_event(token: str, event_hash: str) -> json:
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail="Event deleted.")
 
 
-@router.get("/v1/events/{token}", tags=["event"])
+@router.get("/{token}", tags=["event"])
 async def get_event_information(token: str, event_hash: str) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -94,7 +94,7 @@ async def get_event_information(token: str, event_hash: str) -> json:
     raise HTTPException(status_code=status.HTTP_200_OK, detail=event_result)
 
 
-@router.get("/v1/events/search/", tags=["event"])
+@router.get("/search/", tags=["event"])
 async def search_events(
     token: str,
     event_hash: str = None,

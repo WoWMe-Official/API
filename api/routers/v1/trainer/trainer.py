@@ -20,7 +20,7 @@ from api.routers.functions.general import image_tokenizer, get_token_user_id
 router = APIRouter()
 
 
-@router.get("/v1/trainers/id-search/{token}", tags=["trainer"])
+@router.get("/id-search/{token}", tags=["trainer"])
 async def search_id_trainers(
     token: str,
     min_payment: int = None,
@@ -70,7 +70,7 @@ async def search_id_trainers(
     return HTTPException(status_code=status.HTTP_200_OK, detail=response)
 
 
-@router.post("/v1/trainer/identification/upload/{token}", tags=["trainer"])
+@router.post("/identification/upload/{token}", tags=["trainer"])
 async def upload_identification(token: str, file: UploadFile = File(...)) -> json:
 
     sql = select(Tokens).where(Tokens.token == token)
@@ -124,7 +124,7 @@ async def upload_identification(token: str, file: UploadFile = File(...)) -> jso
     )
 
 
-@router.get("/v1/trainer/identification/evaluate", tags=["trainer"])
+@router.get("/identification/evaluate", tags=["trainer"])
 async def evaluate_identification(token: str, user_id: int) -> json:
     sql = select(Tokens).where(Tokens.token == token)
 
@@ -158,7 +158,7 @@ async def evaluate_identification(token: str, user_id: int) -> json:
         )
 
 
-@router.post("/v1/trainer/certification/upload/{token}", tags=["trainer"])
+@router.post("/certification/upload/{token}", tags=["trainer"])
 async def upload_certification(token: str, file: UploadFile = File(...)) -> json:
 
     sql = select(Tokens).where(Tokens.token == token)
@@ -212,7 +212,7 @@ async def upload_certification(token: str, file: UploadFile = File(...)) -> json
     )
 
 
-@router.get("/v1/trainer/certification/evaluate", tags=["trainer"])
+@router.get("/certification/evaluate", tags=["trainer"])
 async def evaluate_certification(token: str, user_id: int) -> json:
     sql = select(Tokens).where(Tokens.token == token)
 
