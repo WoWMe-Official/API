@@ -11,6 +11,8 @@ from api.database.models import Inbox, InboxPerms
 from api.routers.functions.general import get_token_user_id
 from api.routers.models.inbox import inbox_conversation_start
 from api.database.functions import generate_token
+from api.routers.profile import get_profile_details
+from api.routers.functions.general import batch_function
 import itertools
 import operator
 from collections import Counter
@@ -464,3 +466,52 @@ async def edit_content_of_inbox(
             await session.execute(sql_edit_inbox)
 
     return HTTPException(status.HTTP_202_ACCEPTED, detail="Message edited.")
+
+
+@router.get("/v1/inbox/get-users-in-conversation/{token}/{inbox_token}", tags=["inbox"])
+async def get_inbox_users(token: str, inbox_token) -> json:
+    """
+    This route will retrieve the users of a conversation
+    """
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(InboxPerms).where(
+        InboxPerms.user_id == uuid, InboxPerms.can_access == 1
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            data = await session.execute(sql)
+
+    data = sqlalchemy_result(data)
+    data = data.rows2dict()
+
+    active_conversations = []
+    for d in data:
+        active_conversations.append(d.get("inbox_token"))
+
+    if inbox_token in active_conversations:
+        sql = select(InboxPerms).where(InboxPerms.inbox_token == inbox_token)
+
+        async with USERDATA_ENGINE.get_session() as session:
+            session: AsyncSession = session
+            async with session.begin():
+                result = await session.execute(sql)
+
+        results = sqlalchemy_result(result)
+        results = results.rows2dict()
+
+        print(results)
+
+        data_pack = []
+        for result in results:
+            data_pack.append(tuple((token, result.get("user_id"))))
+
+        future_list = await batch_function(get_profile_details, data=data_pack)
+        return HTTPException(status.HTTP_202_ACCEPTED, detail=future_list)
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You are unable to access this conversation",
+    )
