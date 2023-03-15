@@ -5,6 +5,7 @@ import time
 import asyncio
 import aiohttp
 
+import random
 import cv2
 from asyncio.tasks import create_task
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
@@ -13,6 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
 from sqlalchemy.sql.expression import select
 
+
+from api.config import redis_client
+from api.routers.functions.general import batch_function
 from api.config import route_ip
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
@@ -363,6 +367,7 @@ async def get_profile_details(token: str, user_id: str) -> json:
 
     public = dict()
     public["name"] = name
+    public["user_id"] = user_id
     public["about"] = about
     public["gender"] = gender
     public["socials"] = socials
@@ -447,6 +452,7 @@ async def search_full_profile(
     first_name: str = None,
     last_name: str = None,
     gender: str = None,
+    limit=10,
 ) -> json:
 
     await get_token_user_id(token=token)
@@ -473,15 +479,17 @@ async def search_full_profile(
     result = sqlalchemy_result(result)
     result = result.rows2dict()
 
-    user_ids = []
+    temp_ids = []
     for user in result:
         user_id = user.get("user_id")
         if user_id != None:
-            user_ids.append(user_id)
+            temp_ids.append(user_id)
 
-    user_ids = list(set(user_ids))
+    temp_ids = list(set(temp_ids))
 
     ## user ids
+
+    user_ids = random.choices(population=temp_ids, k=limit)
 
     data_pack = []
     for u_id in user_ids:
@@ -489,12 +497,4 @@ async def search_full_profile(
 
     future_list = await batch_function(get_profile_details, data=data_pack)
 
-    return future_list
-
-
-async def batch_function(function, data):
-
-    future_list = await asyncio.gather(
-        *[create_task(function(d[:][0], d[:][1])) for d in data]
-    )
     return future_list

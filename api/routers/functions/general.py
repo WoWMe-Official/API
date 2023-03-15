@@ -8,6 +8,8 @@ from api.database.functions import sqlalchemy_result
 from api.config import redis_client
 from api.database.functions import generate_token
 from api.database.models import Tokens, Blocks
+import asyncio
+from asyncio import create_task
 
 
 async def get_token_user_id(token: str):
@@ -60,3 +62,11 @@ async def image_tokenizer(image_route):
         image_token = image_token.decode("utf-8")
 
     return image_token
+
+
+async def batch_function(function, data):
+
+    future_list = await asyncio.gather(
+        *[create_task(function(d[:][0], d[:][1])) for d in data]
+    )
+    return future_list

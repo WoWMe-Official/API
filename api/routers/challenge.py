@@ -8,8 +8,10 @@ from api.database.models import (
     Organization,
     ChallengeDetailsDay,
 )
+import datetime
 import hashlib
 import api.routers.models.challenge as challenge_models
+from api.routers.functions.general import batch_function
 from api.routers.functions.general import get_token_user_id
 import json
 
@@ -358,10 +360,17 @@ async def search_challenge(
         session: AsyncSession = session
         async with session.begin():
             challenge_data = await session.execute(sql)
+
     challenge_data = sqlalchemy_result(challenge_data)
     challenge_data = challenge_data.rows2dict()
     challenge_ids = []
     for challenge in challenge_data:
         challenge_ids.append(challenge.get("id"))
 
-    return HTTPException(status_code=status.HTTP_200_OK, detail=challenge_ids)
+    data_pack = []
+    for challenge_id in challenge_ids:
+        data_pack.append(tuple((token, challenge_id)))
+
+    future_list = await batch_function(get_challenge_details, data=data_pack)
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
