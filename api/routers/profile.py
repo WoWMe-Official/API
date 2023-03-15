@@ -6,6 +6,7 @@ import asyncio
 import aiohttp
 
 import cv2
+from asyncio.tasks import create_task
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -482,9 +483,18 @@ async def search_full_profile(
 
     ## user ids
 
-    responses = []
+    data_pack = []
     for u_id in user_ids:
-        response = await get_profile_details(token=token, user_id=u_id)
-        responses.append(response)
+        data_pack.append(tuple((token, u_id)))
 
-    return responses
+    future_list = await batch_function(get_profile_details, data=data_pack)
+
+    return future_list
+
+
+async def batch_function(function, data):
+
+    future_list = await asyncio.gather(
+        *[create_task(function(d[:][0], d[:][1])) for d in data]
+    )
+    return future_list
