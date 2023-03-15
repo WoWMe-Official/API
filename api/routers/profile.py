@@ -2,6 +2,8 @@ import glob
 import json
 import os
 import time
+import asyncio
+import aiohttp
 
 import cv2
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
@@ -394,8 +396,8 @@ async def get_profile_details(token: str, user_id: str) -> json:
     return response
 
 
-@router.get("/v1/profile/id-search/", tags=["profile"])
-async def search_id_profile(
+@router.get("/v1/profile/search/", tags=["profile"])
+async def search_profile(
     token: str,
     account_type: int = None,
     first_name: str = None,
@@ -434,18 +436,19 @@ async def search_id_profile(
 
     user_ids = list(set(user_ids))
 
-    raise HTTPException(status_code=status.HTTP_200_OK, detail=user_ids)
+    return HTTPException(status_code=status.HTTP_200_OK, detail=user_ids)
 
 
-@router.get("/v1/profile/search/", tags=["profile"])
-async def search_profile(
+@router.get("/v1/profile/full-search/", tags=["profile"])
+async def search_full_profile(
     token: str,
     account_type: int = None,
     first_name: str = None,
     last_name: str = None,
     gender: str = None,
 ) -> json:
-    uuid = await get_token_user_id(token=token)
+
+    await get_token_user_id(token=token)
 
     sql = select(Registration)
 
@@ -469,4 +472,19 @@ async def search_profile(
     result = sqlalchemy_result(result)
     result = result.rows2dict()
 
-    raise HTTPException(status_code=status.HTTP_200_OK, detail=result)
+    user_ids = []
+    for user in result:
+        user_id = user.get("user_id")
+        if user_id != None:
+            user_ids.append(user_id)
+
+    user_ids = list(set(user_ids))
+
+    ## user ids
+
+    responses = []
+    for u_id in user_ids:
+        response = await get_profile_details(token=token, user_id=u_id)
+        responses.append(response)
+
+    return responses
