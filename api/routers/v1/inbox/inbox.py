@@ -11,7 +11,7 @@ from api.database.models import Inbox, InboxPerms
 from api.routers.functions.general import get_token_user_id
 from api.routers.models.inbox import inbox_conversation_start
 from api.database.functions import generate_token
-from api.routers.profile import get_profile_details
+from api.routers.v1.profile.profile import get_profile_details
 from api.routers.functions.general import batch_function, check_user_block
 import itertools
 import operator
@@ -20,7 +20,7 @@ from collections import Counter
 router = APIRouter()
 
 
-@router.post("/v1/inbox/start/{token}", tags=["inbox"])
+@router.post("/start/{token}", tags=["inbox"])
 async def start_a_new_conversation(
     token: str,
     inbox_conversation_start: inbox_conversation_start,
@@ -57,7 +57,7 @@ async def start_a_new_conversation(
     return HTTPException(status.HTTP_201_CREATED, detail=inbox_token)
 
 
-@router.get("/v1/inbox/search/", tags=["inbox"])
+@router.get("/search/", tags=["inbox"])
 async def search_inbox(
     token: str,
     inbox_id: int = None,
@@ -95,7 +95,7 @@ async def search_inbox(
     return HTTPException(status.HTTP_200_OK, detail=inbox_results)
 
 
-@router.get("/v1/inbox/id-search/", tags=["inbox"])
+@router.get("/id-search/", tags=["inbox"])
 async def search_inbox_id(
     token: str,
     inbox_id: int = None,
@@ -138,7 +138,7 @@ async def search_inbox_id(
     return HTTPException(status.HTTP_200_OK, detail=response)
 
 
-@router.get("/v1/inbox/id-conversations/", tags=["inbox"])
+@router.get("/id-conversations/", tags=["inbox"])
 async def get_inbox_conversation_ids(token: str) -> json:
     """
     This route allows you to get the inbox_ids for all active conversations.
@@ -160,7 +160,7 @@ async def get_inbox_conversation_ids(token: str) -> json:
     return HTTPException(status.HTTP_200_OK, detail=response)
 
 
-@router.get("/v1/inbox/overview/", tags=["inbox"])
+@router.get("/overview/", tags=["inbox"])
 async def get_inbox_overview(token: str) -> json:
     """
     Returns an overview of the active conversations and the most recent message in the conversation list. This is ideal for overviews.
@@ -185,7 +185,7 @@ async def get_inbox_overview(token: str) -> json:
     return HTTPException(status.HTTP_200_OK, detail=response)
 
 
-@router.post("/v1/inbox/reply/{token}", tags=["inbox"])
+@router.post("/reply/{token}", tags=["inbox"])
 async def reply_to_a_conversation(token: str, inbox_token: str, content: str) -> json:
     """
     This route allows you to send a reply to a given inbox token/conversation.
@@ -224,7 +224,7 @@ async def reply_to_a_conversation(token: str, inbox_token: str, content: str) ->
     return HTTPException(status.HTTP_201_CREATED, detail="Message Sent")
 
 
-@router.get("/v1/inbox/{token}", tags=["inbox"])
+@router.get("/{token}", tags=["inbox"])
 async def get_inbox_information(token: str) -> json:
     """
     This route allows you to obtain all up to date inbox information for a user, with all conversations.
@@ -250,7 +250,7 @@ async def get_inbox_information(token: str) -> json:
     return HTTPException(status.HTTP_200_OK, detail=response)
 
 
-@router.put("/v1/inbox/leave/{token}", tags=["inbox"])
+@router.put("/leave/{token}", tags=["inbox"])
 async def leave_a_conversation(token: str, inbox_token: str) -> json:
     """
     This route allows you to send a leave a given conversation
@@ -290,7 +290,7 @@ async def leave_a_conversation(token: str, inbox_token: str) -> json:
     )
 
 
-@router.delete("/v1/inbox/delete/{token}", tags=["inbox"])
+@router.delete("/delete/{token}", tags=["inbox"])
 async def delete_inbox_message(token: str, inbox_id: int) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -304,7 +304,7 @@ async def delete_inbox_message(token: str, inbox_id: int) -> json:
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail="Message deleted.")
 
 
-@router.get("/v1/inbox/get-conversation/{token}", tags=["inbox"])
+@router.get("/get-conversation/{token}", tags=["inbox"])
 async def get_active_conversation_with_user(token: str, user_id: int) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -356,7 +356,7 @@ async def get_active_conversation_with_user(token: str, user_id: int) -> json:
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=conversations)
 
 
-@router.get("/v1/inbox/get-private-conversation/{token}", tags=["inbox"])
+@router.get("/get-private-conversation/{token}", tags=["inbox"])
 async def get_active_private_conversation_with_user(token: str, user_id: int) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -424,7 +424,7 @@ async def get_active_private_conversation_with_user(token: str, user_id: int) ->
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=mt_list)
 
 
-@router.put("/v1/inbox/edit/{token}", tags=["inbox"])
+@router.put("/edit/{token}", tags=["inbox"])
 async def edit_content_of_inbox(
     token: str, inbox_id: int, new_subject_line: str = None, new_content: str = None
 ) -> json:
@@ -469,7 +469,7 @@ async def edit_content_of_inbox(
 
 
 @router.get(
-    "/v1/inbox/invite/{token}/{inbox_token}/{user_id}",
+    "/invite/{token}/{inbox_token}/{user_id}",
     tags=["inbox"],
 )
 async def invite_user_to_conversation(token: str, inbox_token: str, user_id) -> json:
@@ -518,7 +518,7 @@ async def invite_user_to_conversation(token: str, inbox_token: str, user_id) -> 
     )
 
 
-@router.get("/v1/inbox/get-users-in-conversation/{token}/{inbox_token}", tags=["inbox"])
+@router.get("/get-users-in-conversation/{token}/{inbox_token}", tags=["inbox"])
 async def get_inbox_users(token: str, inbox_token) -> json:
     """
     This route will retrieve the users of a conversation

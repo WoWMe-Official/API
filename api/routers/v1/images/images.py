@@ -8,7 +8,7 @@ from api.config import redis_client
 router = APIRouter()
 
 
-@router.get("/v1/image/{image_id}", tags=["images"])
+@router.get("/{image_id}", tags=["images"])
 async def get_image(image_id: str) -> json:
     """get image copy"""
     image_route = await redis_client.get(image_id)

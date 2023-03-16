@@ -2,28 +2,12 @@ import api.middleware
 import logging
 from api.config import app, redis_client
 from api.routers import (
-    account,
-    challenge,
-    dashboard,
-    event,
-    profile,
-    trainer,
-    workout,
-    images,
-    inbox,
+    v1,
 )
 
 logger = logging.getLogger(__name__)
 
-app.include_router(account.router)
-app.include_router(challenge.router)
-app.include_router(profile.router)
-app.include_router(trainer.router)
-app.include_router(event.router)
-app.include_router(dashboard.router)
-app.include_router(workout.router)
-app.include_router(images.router)
-app.include_router(inbox.router)
+app.include_router(v1.router)
 
 
 @app.get("/")

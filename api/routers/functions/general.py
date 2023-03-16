@@ -10,6 +10,7 @@ from api.database.functions import generate_token
 from api.database.models import Tokens, Blocks
 import asyncio
 from asyncio import create_task
+import hashlib
 
 
 async def get_token_user_id(token: str):
@@ -70,3 +71,18 @@ async def batch_function(function, data):
         *[create_task(function(d[:][0], d[:][1])) for d in data]
     )
     return future_list
+
+
+def time_to_string(time):
+    return f"{time.year}{time.month}{time.day}{time.hour}{time.minute}{time.second}"
+
+
+def day_obj_to_string(day):
+    start_string = time_to_string(day.start_time)
+    end_string = time_to_string(day.end_time)
+    return f"{start_string}{end_string}"
+
+
+def hash_day(day):
+    day_string = day_obj_to_string(day)
+    return hashlib.sha256(day_string.encode()).hexdigest()

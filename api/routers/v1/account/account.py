@@ -24,10 +24,10 @@ from api.routers.functions.general import get_token_user_id
 router = APIRouter()
 
 
-@router.post("/v1/account/sign-up", tags=["account"])
+@router.post("/sign-up", tags=["account"])
 async def sign_up(signup: account_models.signup) -> json:
     """
-    Register an account with Workout With Me.
+    This code defines a function sign_up that registers an account with WoWMe. The function performs several checks on the provided account details and raises HTTPException with corresponding status codes and details if any check fails. If all checks pass, the function calls the sign_up_account function from account_functions to create the account.
     """
     await account_functions.sanity_check(signup=signup)
 
@@ -67,8 +67,10 @@ async def sign_up(signup: account_models.signup) -> json:
     await account_functions.sign_up_account(signup=signup)
 
 
-@router.put("/v1/account/change-password", tags=["account"])
+@router.put("/change-password", tags=["account"])
 async def change_password(email: str, old_password: str, new_password: str) -> json:
+    """
+    This is a PUT API endpoint for changing the password of a registered user. It takes in the user's email, old password, and new password. The email is first sanitized and both old and new passwords are hashed. The API endpoint then checks if the old password matches the email address provided, and if so, updates the password with the new hash. If the old password does not match, an HTTPException is raised with a 401 error status code. If the update is successful, an HTTPException is raised with a 202 status code indicating that the password has been changed."""
     email = await account_functions.sanitize_email(email=email)
     old_hashed_password = await hashbrown(password=old_password)
     new_hashed_password = await hashbrown(password=new_password)
@@ -109,10 +111,11 @@ async def change_password(email: str, old_password: str, new_password: str) -> j
     )
 
 
-@router.put("/v1/account/edit/{token}", tags=["account"])
+@router.put("/edit/{token}", tags=["account"])
 async def edit_account_details(
     token: str, signup: account_models.edit_account_details
 ) -> json:
+    """This code defines an asynchronous HTTP PUT request to edit user account details. It takes a token and a signup object as parameters, where signup is a Pydantic model. The function first retrieves the user ID associated with the token, and then updates the database based on the fields in signup. Depending on the fields specified, the function updates the Registration, TrainerInformation, UserInformation, AvailableDays, Specializations, or Account database tables. The function executes the database updates in separate sessions to maintain database integrity. The function returns a JSON response."""
     uuid = await get_token_user_id(token=token)
 
     if signup.edit_personal_details:
@@ -291,10 +294,13 @@ async def edit_account_details(
     )
 
 
-@router.post("/v1/account/login", tags=["account"])
+@router.post("/login", tags=["account"])
 async def login_to_your_account(
     login_information: account_models.login_information,
 ) -> json:
+    """This code defines an HTTP POST endpoint "/login" with a single input parameter 'login_information' of a custom class 'account_models.login_information'. The endpoint is tagged under "account".
+
+    The function uses the input email and password to query a database table (Tokens) with a JOIN condition to another table (Registration) using SQLAlchemy. If the query returns no data, an HTTPException is raised with a status code of 401 and the detail message "Access not permitted". If the query returns data, the function creates a response dictionary with keys "token" and "user_id" and their corresponding values taken from the query result. Finally, the function returns the response dictionary as JSON."""
     email = login_information.email
     password = await hashbrown(login_information.password)
 
@@ -321,8 +327,11 @@ async def login_to_your_account(
     return response
 
 
-@router.post("/v1/account/block/{token}/{user_id}", tags=["account"])
+@router.post("/block/{token}/{user_id}", tags=["account"])
 async def block_user(token: str, user_id: str) -> json:
+    """
+    This code defines an API endpoint that allows users to block another user by sending a POST request with a valid authentication token and the user ID of the user to be blocked in the URL. The function retrieves the UUID of the authenticated user using the authentication token, then inserts a new record in the "Blocks" table in the database with the UUID of the authenticated user and the user ID of the user to be blocked. If the insertion is successful, the function returns a HTTP 201 status code with a message indicating that the user has been blocked.
+    """
     uuid = await get_token_user_id(token=token)
 
     insert_block = insert(Blocks).values(blocked_id=user_id, blocker_id=uuid)
@@ -337,8 +346,11 @@ async def block_user(token: str, user_id: str) -> json:
     )
 
 
-@router.post("/v1/account/unblock/{token}/{user_id}", tags=["account"])
+@router.post("/unblock/{token}/{user_id}", tags=["account"])
 async def unblock_user(token: str, user_id: str) -> json:
+    """
+    This is a Python FastAPI endpoint for unblocking a user. The endpoint is decorated with @router.post() and accepts two path parameters, token and user_id. It calls the get_token_user_id() function to get the user ID for the token. It then creates a SQLAlchemy delete() statement to remove a row from the Blocks table where the blocked_id column matches user_id and the blocker_id column matches the user ID for the token. The delete() statement is executed in an async session and an HTTPException with a status code of 202 and a detail message of "User has been unblocked." is raised.
+    """
     uuid = await get_token_user_id(token=token)
 
     remove_block = delete(Blocks).where(

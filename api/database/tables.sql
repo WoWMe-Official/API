@@ -225,3 +225,9 @@ CREATE TABLE `inbox_perms` (
  `can_access` tinyint(1) NOT NULL,
  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `favorites` (
+ `ID` int NOT NULL AUTO_INCREMENT,
+ `user_id_1` int NOT NULL,
+ `user_id_2` int NOT NULL,
+ PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

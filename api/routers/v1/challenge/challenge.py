@@ -1,35 +1,25 @@
 import json
 
-from fastapi import APIRouter
-from fastapi import APIRouter, HTTPException, status
-from api.database.models import (
-    Challenge,
-    Leaderboard,
-    Organization,
-    ChallengeDetailsDay,
-)
-import datetime
-import hashlib
-import api.routers.models.challenge as challenge_models
-from api.routers.functions.general import batch_function
-from api.routers.functions.general import get_token_user_id
-import json
-
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import select, update, insert, delete
+from sqlalchemy.sql.expression import delete, insert, select
 
+import api.routers.models.challenge as challenge_models
 from api.database.database import USERDATA_ENGINE
 from api.database.functions import sqlalchemy_result
-from api.database.models import Tokens, TrainerClientHistory, TrainerStats
-from api.routers.functions.general import get_token_user_id
-
+from api.database.models import (
+    Challenge,
+    ChallengeDetailsDay,
+    Leaderboard,
+    Organization,
+)
+from api.routers.functions.general import batch_function, get_token_user_id, hash_day
 
 router = APIRouter()
 
 
-@router.get("/v1/challenge/{token}/{challenge_id}", tags=["challenge"])
+@router.get("/{token}/{challenge_id}", tags=["challenge"])
 async def get_challenge_details(token: str, challenge_id: str) -> json:
 
     uuid = await get_token_user_id(token=token)
@@ -80,22 +70,7 @@ async def get_challenge_details(token: str, challenge_id: str) -> json:
     return HTTPException(status_code=status.HTTP_200_OK, detail=challenge_result)
 
 
-def time_to_string(time):
-    return f"{time.year}{time.month}{time.day}{time.hour}{time.minute}{time.second}"
-
-
-def day_obj_to_string(day):
-    start_string = time_to_string(day.start_time)
-    end_string = time_to_string(day.end_time)
-    return f"{start_string}{end_string}"
-
-
-def hash_day(day):
-    day_string = day_obj_to_string(day)
-    return hashlib.sha256(day_string.encode()).hexdigest()
-
-
-@router.post("/v1/challenge/{token}", tags=["challenge"])
+@router.post("/{token}", tags=["challenge"])
 async def start_challenge(
     token: str, challenge_details: challenge_models.challenge_details
 ) -> json:
@@ -261,7 +236,7 @@ async def start_challenge(
     )
 
 
-@router.put("/v1/challenge/edit/{token}", tags=["challenge"])
+@router.put("/edit/{token}", tags=["challenge"])
 async def edit_challenge_details(
     token: str,
     challenge_id: int,
@@ -296,7 +271,7 @@ async def edit_challenge_details(
     )
 
 
-@router.delete("/v1/challenge/delete/{token}", tags=["challenge"])
+@router.delete("/delete/{token}", tags=["challenge"])
 async def delete_challenge(token: str, challenge_id: int) -> json:
     uuid = await get_token_user_id(token=token)
 
@@ -314,7 +289,7 @@ async def delete_challenge(token: str, challenge_id: int) -> json:
     )
 
 
-@router.get("/v1/challenge/search/", tags=["challenge"])
+@router.get("/search/", tags=["challenge"])
 async def search_challenge(
     token: str,
     name: str = None,
@@ -363,13 +338,8 @@ async def search_challenge(
 
     challenge_data = sqlalchemy_result(challenge_data)
     challenge_data = challenge_data.rows2dict()
-    challenge_ids = []
-    for challenge in challenge_data:
-        challenge_ids.append(challenge.get("id"))
-
-    data_pack = []
-    for challenge_id in challenge_ids:
-        data_pack.append(tuple((token, challenge_id)))
+    challenge_ids = [challenge.get("id") for challenge in challenge_data]
+    data_pack = [tuple((token, challenge_id)) for challenge_id in challenge_ids]
 
     future_list = await batch_function(get_challenge_details, data=data_pack)
 
