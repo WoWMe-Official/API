@@ -287,3 +287,10 @@ class InboxPerms(Base):
     inbox_token = Column(TEXT, nullable=False)
     user_id = Column(INTEGER, nullable=False)
     can_access = Column(INTEGER)
+
+
+class Favorites(Base):
+    __tablename__ = "favorites"
+    ID = Column(INTEGER, primary_key=True, autoincrement=True)
+    user_id_1 = Column(INTEGER)
+    user_id_2 = Column(INTEGER)

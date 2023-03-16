@@ -338,13 +338,8 @@ async def search_challenge(
 
     challenge_data = sqlalchemy_result(challenge_data)
     challenge_data = challenge_data.rows2dict()
-    challenge_ids = []
-    for challenge in challenge_data:
-        challenge_ids.append(challenge.get("id"))
-
-    data_pack = []
-    for challenge_id in challenge_ids:
-        data_pack.append(tuple((token, challenge_id)))
+    challenge_ids = [challenge.get("id") for challenge in challenge_data]
+    data_pack = [tuple((token, challenge_id)) for challenge_id in challenge_ids]
 
     future_list = await batch_function(get_challenge_details, data=data_pack)
 
