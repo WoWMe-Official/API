@@ -239,3 +239,13 @@ CREATE TABLE `requests` (
  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
  PRIMARY KEY (`request_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `organization_members` (
+ `id` int NOT NULL AUTO_INCREMENT,
+ `organization_id` int NOT NULL,
+ `user_id` int NOT NULL,
+ `user_org_admin` tinyint(1) NOT NULL,
+ `user_org_owner` tinyint(1) NOT NULL,
+ `recruiter` int DEFAULT NULL,
+ `request_status` int NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

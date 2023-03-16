@@ -11,6 +11,7 @@ from api.routers.v1 import (
     workout,
     favorites,
     request,
+    organization,
 )
 
 router = APIRouter(prefix="/v1")
@@ -26,3 +27,4 @@ router.include_router(router=trainer.router)
 router.include_router(router=workout.router)
 router.include_router(router=favorites.router)
 router.include_router(router=request.router)
+router.include_router(router=organization.router)
