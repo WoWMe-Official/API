@@ -485,7 +485,6 @@ async def search_full_profile(
     ## user ids
 
     user_ids = random.choices(population=temp_ids, k=int(limit))
-
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
 

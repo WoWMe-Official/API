@@ -303,3 +303,14 @@ class Requests(Base):
     requested_user_id = Column(INTEGER)
     request_status = Column(INTEGER)
     timestamp = Column(TIMESTAMP)
+
+
+class OrganizationMembers(Base):
+    __tablename__ = "organization_members"
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    organization_id = Column(INTEGER)
+    user_id = Column(INTEGER)
+    user_org_admin = Column(INTEGER)
+    user_org_owner = Column(INTEGER)
+    recruiter = Column(INTEGER)
+    request_status = Column(INTEGER)
