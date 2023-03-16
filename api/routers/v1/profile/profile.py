@@ -38,7 +38,7 @@ router = APIRouter()
 async def get_profile_picture(user_id: str) -> json:
     "Get the profile picture of a user by their ID."
     if not os.path.exists(f"{os.getcwd()}/images/{user_id}/profile.jpeg"):
-        raise HTTPException(
+        return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not have a profile picture.",
         )
@@ -363,6 +363,7 @@ async def get_profile_details(token: str, user_id: str) -> json:
     public["name"] = name
     public["user_id"] = user_id
     public["about"] = about
+    public["profile_picture"] = await get_profile_picture(user_id=user_id)
     public["gender"] = gender
     public["socials"] = socials
     public["availability"] = availability
@@ -483,7 +484,7 @@ async def search_full_profile(
 
     ## user ids
 
-    user_ids = random.choices(population=temp_ids, k=limit)
+    user_ids = random.choices(population=temp_ids, k=int(limit))
 
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
