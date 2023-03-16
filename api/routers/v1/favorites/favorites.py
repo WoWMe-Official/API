@@ -118,7 +118,10 @@ async def get_favorites(token: str) -> json:
         user_ids.append(d.get("user_id_1"))
         user_ids.append(d.get("user_id_2"))
     user_ids = list(set(user_ids))
-    user_ids.remove(uuid)
+    try:
+        user_ids.remove(uuid)
+    except:
+        pass
 
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
