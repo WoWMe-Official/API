@@ -231,3 +231,11 @@ CREATE TABLE `favorites` (
  `user_id_2` int NOT NULL,
  PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `requests` (
+ `request_id` int NOT NULL AUTO_INCREMENT,
+ `requesting_user_id` int NOT NULL,
+ `requested_user_id` int NOT NULL,
+ `request_status` int NOT NULL COMMENT '0 = denied, 1 = pending, 2 = accepted',
+ `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (`request_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

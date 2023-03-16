@@ -294,3 +294,12 @@ class Favorites(Base):
     ID = Column(INTEGER, primary_key=True, autoincrement=True)
     user_id_1 = Column(INTEGER)
     user_id_2 = Column(INTEGER)
+
+
+class Requests(Base):
+    __tablename__ = "requests"
+    request_id = Column(INTEGER, primary_key=True, autoincrement=True)
+    requesting_user_id = Column(INTEGER)
+    requested_user_id = Column(INTEGER)
+    request_status = Column(INTEGER)
+    timestamp = Column(TIMESTAMP)
