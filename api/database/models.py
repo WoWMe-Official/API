@@ -79,6 +79,16 @@ class ChallengeDetailsDay(Base):
     is_start = Column(INTEGER)
 
 
+class ChallengeMembers(Base):
+    __tablename__ = "challenge_members"
+
+    id = Column(INTEGER, primary_key=True)
+    challenge_id = Column(INTEGER)
+    recruiter = Column(INTEGER)
+    request_status = Column(INTEGER)
+    user_id = Column(INTEGER)
+
+
 class Organization(Base):
     __tablename__ = "organization"
     ID = Column(INTEGER, primary_key=True, autoincrement=True)

@@ -1,9 +1,10 @@
 import json
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.expression import delete, insert, select
+from sqlalchemy.sql.expression import delete, insert, select, update
+
 
 import api.routers.models.challenge as challenge_models
 from api.database.database import USERDATA_ENGINE
@@ -11,15 +12,22 @@ from api.database.functions import sqlalchemy_result
 from api.database.models import (
     Challenge,
     ChallengeDetailsDay,
+    OrganizationMembers,
+    ChallengeMembers,
     Leaderboard,
     Organization,
 )
-from api.routers.functions.general import batch_function, get_token_user_id, hash_day
+from api.routers.functions.general import (
+    batch_function,
+    get_token_user_id,
+    hash_day,
+    check_user_block,
+)
 
 router = APIRouter()
 
 
-@router.get("/{token}/{challenge_id}", tags=["challenge"])
+@router.get("/get/{token}/{challenge_id}", tags=["challenge"])
 async def get_challenge_details(token: str, challenge_id: str) -> json:
 
     uuid = await get_token_user_id(token=token)
@@ -70,19 +78,34 @@ async def get_challenge_details(token: str, challenge_id: str) -> json:
     return HTTPException(status_code=status.HTTP_200_OK, detail=challenge_result)
 
 
-@router.post("/{token}", tags=["challenge"])
+@router.post("/start/{token}", tags=["challenge"])
 async def start_challenge(
     token: str, challenge_details: challenge_models.challenge_details
 ) -> json:
-
     uuid = await get_token_user_id(token=token)
     challenge_details.user_id = uuid
 
-    insert_organization_sql = insert(Organization).values(
-        name=challenge_details.organization.name,
-        image_route=challenge_details.organization.image_route,
-        distance=challenge_details.organization.distance,
+    select_organization_sql = select(OrganizationMembers).where(
+        OrganizationMembers.user_id == uuid,
+        OrganizationMembers.organization_id == challenge_details.organization,
+        or_(
+            OrganizationMembers.user_org_admin == 1,
+            OrganizationMembers.user_org_owner == 1,
+        ),
     )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            organization_result = await session.execute(select_organization_sql)
+
+    organization_result = sqlalchemy_result(organization_result)
+    organization_result = organization_result.rows2dict()
+    if not organization_result:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not an admin or owner of the given organization, or the organization does not exist.",
+        )
 
     insert_leaderboard_sql = insert(Leaderboard).values(
         name=challenge_details.leaderboard.name,
@@ -113,19 +136,8 @@ async def start_challenge(
         session: AsyncSession = session
         async with session.begin():
             await session.execute(insert_leaderboard_sql)
-            await session.execute(insert_organization_sql)
             await session.execute(insert_start_date)
             await session.execute(insert_end_date)
-
-    select_organization_sql = select(Organization).where(
-        Organization.name == challenge_details.organization.name
-    )
-    select_organization_sql = select_organization_sql.where(
-        Organization.image_route == challenge_details.organization.image_route
-    )
-    select_organization_sql = select_organization_sql.where(
-        Organization.distance == challenge_details.organization.distance
-    )
 
     select_leaderboard_sql = select(Leaderboard).where(
         Leaderboard.name == challenge_details.leaderboard.name
@@ -153,17 +165,12 @@ async def start_challenge(
         session: AsyncSession = session
         async with session.begin():
             leaderboard_data = await session.execute(select_leaderboard_sql)
-            organization_data = await session.execute(select_organization_sql)
             start_date_data = await session.execute(select_start_date_sql)
             end_date_data = await session.execute(select_end_date_sql)
 
     leaderboard_result = sqlalchemy_result(leaderboard_data)
     leaderboard_result = leaderboard_result.rows2dict()
     leaderboard_entry_id = leaderboard_result[0].get("ID")
-
-    organization_result = sqlalchemy_result(organization_data)
-    organization_result = organization_result.rows2dict()
-    organization_entry_id = organization_result[0].get("ID")
 
     start_result = sqlalchemy_result(start_date_data)
     start_result = start_result.rows2dict()
@@ -183,7 +190,7 @@ async def start_challenge(
         end_date=end_result_id,
         distance=challenge_details.distance,
         reward=challenge_details.reward,
-        organization=organization_entry_id,
+        organization=challenge_details.organization,
         leaderboard=leaderboard_entry_id,
     )
 
@@ -215,7 +222,7 @@ async def start_challenge(
         Challenge.reward == challenge_details.reward
     )
     select_challenge_sql = select_challenge_sql.where(
-        Challenge.organization == organization_entry_id
+        Challenge.organization == challenge_details.organization
     )
     select_challenge_sql = select_challenge_sql.where(
         Challenge.leaderboard == leaderboard_entry_id
@@ -344,3 +351,306 @@ async def search_challenge(
     future_list = await batch_function(get_challenge_details, data=data_pack)
 
     return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
+
+
+@router.post("/request-join/{token}/{challenge_id}", tags=["challenge"])
+async def request_to_join_challenge(token: str, challenge_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    sql = select(ChallengeMembers).where(
+        ChallengeMembers.challenge_id == challenge_id, ChallengeMembers.user_id == uuid
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(sql)
+
+    result = sqlalchemy_result(result)
+    result = result.rows2dict()
+
+    if result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This user already has a request to join the challenge.",
+        )
+
+    insert_request = insert(ChallengeMembers).values(
+        user_id=uuid, recruiter=uuid, challenge_id=challenge_id, request_status=1
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(insert_request)
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED,
+        detail="You have requested to join this challenge.",
+    )
+
+
+@router.post("/invite/{token}/{user_id}/{challenge_id}", tags=["challenge"])
+async def invite_to_challenge(token: str, user_id: int, challenge_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    if await check_user_block(blocked_id=uuid, blocker_id=user_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You have been blocked by this user, and cannot send them challenge requests.",
+        )
+
+    sql = select(ChallengeMembers).where(
+        ChallengeMembers.challenge_id == challenge_id,
+        ChallengeMembers.user_id == user_id,
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(sql)
+
+    result = sqlalchemy_result(result)
+    result = result.rows2dict()
+
+    if result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This user already has a request to join the challenge.",
+        )
+
+    insert_request = insert(ChallengeMembers).values(
+        user_id=user_id, recruiter=uuid, challenge_id=challenge_id, request_status=1
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(insert_request)
+    raise HTTPException(
+        status_code=status.HTTP_201_CREATED,
+        detail="You have sent this user a request to join a challenge.",
+    )
+
+
+@router.put("/accept-request/{token}/{user_id}/{challenge_id}", tags=["challenge"])
+async def accept_challenge_request(token: str, user_id: int, challenge_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    get_challenge_request_id = select(ChallengeMembers).where(
+        ChallengeMembers.challenge_id == challenge_id,
+        ChallengeMembers.user_id == user_id,
+        ChallengeMembers.request_status == 1,
+    )
+    get_challenge_information = select(Challenge).where(Challenge.id == challenge_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(get_challenge_request_id)
+            challenge_information_result = await session.execute(
+                get_challenge_information
+            )
+
+    result = sqlalchemy_result(result)
+    result = result.rows2dict()
+
+    challenge_information_result = sqlalchemy_result(challenge_information_result)
+    challenge_information_result = challenge_information_result.rows2dict()
+
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This user does not have a request for this challenge",
+        )
+
+    if not challenge_information_result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This challenge does not exist or could not be found.",
+        )
+
+    recruiter = result[0].get("recruiter")
+
+    validation = None
+    if (recruiter == user_id) & (uuid != user_id):
+        # validate self
+        validation = uuid
+    elif (recruiter != user_id) & (uuid == user_id):
+        # validate recruiter
+        validation = recruiter
+    elif int(recruiter) == int(uuid) == int(user_id):
+        # attempt to join on self
+        raise HTTPException(
+            status_code=status.HTTP_418_IM_A_TEAPOT,
+            detail="You cannot accept your own request to join a challenge...",
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_418_IM_A_TEAPOT,
+            detail="You cannot accept this challenge request for another reason.",
+        )
+
+    organization_id = [
+        challenge.get("organization") for challenge in challenge_information_result
+    ][0]
+
+    select_validation = select(OrganizationMembers).where(
+        OrganizationMembers.organization_id == organization_id,
+        OrganizationMembers.user_id == validation,
+        or_(
+            OrganizationMembers.user_org_admin == 1,
+            OrganizationMembers.user_org_owner == 1,
+        ),
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            select_validation_result = await session.execute(select_validation)
+
+    select_validation_result = sqlalchemy_result(select_validation_result)
+    select_validation_result = select_validation_result.rows2dict()
+
+    if not select_validation_result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This challenge request cannot be accepted as it has now become invalid, please try again.",
+        )
+
+    sql_update = (
+        update(ChallengeMembers)
+        .where(
+            ChallengeMembers.challenge_id == challenge_id,
+            ChallengeMembers.user_id == user_id,
+        )
+        .values(request_status=2)
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql_update)
+
+    return HTTPException(
+        status_code=status.HTTP_202_ACCEPTED,
+        detail="Challenge accepted.",
+    )
+
+
+@router.put(
+    "/deny-request-challenge/{token}/{user_id}/{challenge_id}", tags=["challenge"]
+)
+async def deny_challenge_request(token: str, user_id: int, challenge_id: int) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    get_challenge_request_id = select(ChallengeMembers).where(
+        ChallengeMembers.challenge_id == challenge_id,
+        ChallengeMembers.user_id == user_id,
+        ChallengeMembers.request_status == 1,
+    )
+    get_challenge_information = select(Challenge).where(Challenge.id == challenge_id)
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            result = await session.execute(get_challenge_request_id)
+            challenge_information_result = await session.execute(
+                get_challenge_information
+            )
+
+    result = sqlalchemy_result(result)
+    result = result.rows2dict()
+
+    challenge_information_result = sqlalchemy_result(challenge_information_result)
+    challenge_information_result = challenge_information_result.rows2dict()
+
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This user does not have a request for this challenge",
+        )
+
+    if not challenge_information_result:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This challenge does not exist or could not be found.",
+        )
+
+    recruiter = result[0].get("recruiter")
+
+    validation = None
+    if (recruiter == user_id) & (uuid != user_id):
+        validation = uuid
+
+        organization_id = [
+            challenge.get("organization") for challenge in challenge_information_result
+        ][0]
+
+        select_validation = select(OrganizationMembers).where(
+            OrganizationMembers.organization_id == organization_id,
+            OrganizationMembers.user_id == validation,
+            or_(
+                OrganizationMembers.user_org_admin == 1,
+                OrganizationMembers.user_org_owner == 1,
+            ),
+        )
+
+        async with USERDATA_ENGINE.get_session() as session:
+            session: AsyncSession = session
+            async with session.begin():
+                select_validation_result = await session.execute(select_validation)
+
+        select_validation_result = sqlalchemy_result(select_validation_result)
+        select_validation_result = select_validation_result.rows2dict()
+
+        if not select_validation_result:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This challenge request cannot be accepted as it has now become invalid, please try again.",
+            )
+    elif uuid == user_id:
+        pass
+        # you dont need to validate anything here just deny the request
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_418_IM_A_TEAPOT,
+            detail="You cannot deny this challenge request for another reason.",
+        )
+
+    sql_update = (
+        update(ChallengeMembers)
+        .where(
+            ChallengeMembers.challenge_id == challenge_id,
+            ChallengeMembers.user_id == user_id,
+        )
+        .values(request_status=0)
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            await session.execute(sql_update)
+
+    return HTTPException(
+        status_code=status.HTTP_202_ACCEPTED,
+        detail="Challenge denied.",
+    )
+
+
+@router.get("/get-requests/{token}", tags=["challenge"])
+async def get_active_challenge_requests(token: str) -> json:
+    uuid = await get_token_user_id(token=token)
+
+    select_active_challenges = select(ChallengeMembers).where(
+        ChallengeMembers.user_id == uuid, ChallengeMembers.request_status == 1
+    )
+
+    async with USERDATA_ENGINE.get_session() as session:
+        session: AsyncSession = session
+        async with session.begin():
+            challenge_requests = await session.execute(select_active_challenges)
+
+    challenge_requests = sqlalchemy_result(challenge_requests)
+    challenge_requests = challenge_requests.rows2dict()
+
+    raise HTTPException(status_code=status.HTTP_200_OK, detail=challenge_requests)

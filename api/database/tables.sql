@@ -249,3 +249,11 @@ CREATE TABLE `organization_members` (
  `request_status` int NOT NULL,
  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `challenge_members` (
+ `id` int NOT NULL AUTO_INCREMENT,
+ `challenge_id` int NOT NULL,
+ `user_id` int NOT NULL,
+ `recruiter` int NOT NULL,
+ `request_status` int NOT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

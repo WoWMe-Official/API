@@ -32,7 +32,7 @@ class challenge_details(BaseModel):
     end_date: day
     distance: int
     reward: str
-    organization: organization
+    organization: int
     leaderboard: leaderboard
 
 
