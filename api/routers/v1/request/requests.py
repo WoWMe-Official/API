@@ -116,7 +116,13 @@ async def get_pending_requests(token: str) -> json:
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
 
-    return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
+    combination = list(zip(future_list, data))
+    result = []
+    for fl, d in combination:
+        d["user_information"] = fl
+        result.append(d)
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail=result)
 
 
 @router.get("/get-accepted/{token}", tags=["requests"])
@@ -142,6 +148,12 @@ async def get_accepted_requests(token: str) -> json:
         pass
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
+
+    combination = list(zip(future_list, data))
+    result = []
+    for fl, d in combination:
+        d["user_information"] = fl
+        result.append(d)
 
     return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
 
@@ -170,6 +182,12 @@ async def get_denied_requests(token: str) -> json:
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
 
+    combination = list(zip(future_list, data))
+    result = []
+    for fl, d in combination:
+        d["user_information"] = fl
+        result.append(d)
+
     return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
 
 
@@ -195,6 +213,12 @@ async def get_all_requests(token: str) -> json:
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
 
+    combination = list(zip(future_list, data))
+    result = []
+    for fl, d in combination:
+        d["user_information"] = fl
+        result.append(d)
+
     return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
 
 
@@ -219,6 +243,12 @@ async def get_sent_requests(token: str) -> json:
         pass
     data_pack = [tuple((token, u_id)) for u_id in user_ids]
     future_list = await batch_function(get_profile_details, data=data_pack)
+
+    combination = list(zip(future_list, data))
+    result = []
+    for fl, d in combination:
+        d["user_information"] = fl
+        result.append(d)
 
     return HTTPException(status_code=status.HTTP_200_OK, detail=future_list)
 
